@@ -34,4 +34,9 @@ cp Index.html Public.html Styles.html appsscript.json apps-script/
 for f in Code.gs Index.html Public.html Styles.html appsscript.json; do
   cp "apps-script/$f" "docs/code/$f.txt"
 done
+
+# ใส่เลขเวอร์ชันจาก Config.gs ลงหน้าแรก GitHub Pages
+VERSION=$(sed -n "s/.*VERSION: '\([^']*\)'.*/\1/p" Config.gs | head -1)
+sed -i "s#<span id=\"app-version\">[^<]*</span>#<span id=\"app-version\">$VERSION</span>#" docs/index.html
+echo "เวอร์ชัน $VERSION"
 echo "สร้างไฟล์ใน apps-script/ และ docs/code/ แล้ว"

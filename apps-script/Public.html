@@ -6,7 +6,9 @@
   <?!= include_('Styles'); ?>
   <style>
     .hero { background: linear-gradient(135deg, #1f6273, #2e8a94); color: #fff; padding: 28px 16px 64px; }
-    .hero-inner { max-width: 640px; margin: 0 auto; }
+    .hero-inner { max-width: 640px; margin: 0 auto; text-align: center; }
+    .hero .brand { flex-direction: column; justify-content: center; gap: 8px; }
+    .hero .brand-version { color: #fff; background: rgba(255,255,255,.18); padding: 1px 10px; border-radius: 999px; margin-top: 4px; }
     .hero .brand-logo { width: 68px; height: 68px; box-shadow: 0 2px 10px rgba(0,0,0,.2); }
     .hero .brand-slogan { color: rgba(255,255,255,.85); white-space: normal; }
     .hero h1 { font-size: 22px; margin-top: 18px; }
@@ -24,7 +26,11 @@
   <div class="hero"><div class="hero-inner">
     <div class="brand">
       <img class="brand-logo" src="https://tannamnaja-ui.github.io/carecenter/logo.jpg" alt="โลโก้ศูนย์ดวงใจกตัญญู">
-      <div><div class="brand-name"><?= centerName ?></div><div class="brand-slogan"><?= slogan ?></div></div>
+      <div>
+        <div class="brand-name"><?= centerName ?></div>
+        <div class="brand-version">เวอร์ชัน <?= version ?></div>
+        <div class="brand-slogan"><?= slogan ?></div>
+      </div>
     </div>
     <? if (mode === 'book') { ?>
       <h1>จองบริการดูแลผู้ป่วย / ผู้สูงอายุ</h1>
@@ -38,7 +44,7 @@
   <div class="wrap">
     <div class="card" id="card"><div class="row"><span class="spinner"></span> กำลังโหลด…</div></div>
   </div>
-  <footer><?= centerName ?> · <?= slogan ?><br><span data-version>เวอร์ชัน <?= version ?></span></footer>
+  <footer><?= centerName ?> · <?= slogan ?></footer>
   <div id="toast" hidden></div>
 
 <script>
