@@ -1,0 +1,8 @@
+**/**
+!*.gs
+!Index.html
+!Public.html
+!Styles.html
+!appsscript.json
+apps-script/**
+docs/**
