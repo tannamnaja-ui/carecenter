@@ -11,6 +11,7 @@ function doGet(e) {
   tpl.mode = page;
   tpl.centerName = CONFIG.CENTER_NAME;
   tpl.slogan = CONFIG.SLOGAN;
+  tpl.version = CONFIG.VERSION;
   return tpl.evaluate()
     .setTitle(CONFIG.CENTER_NAME + (page === 'book' ? ' · จองบริการ' : page === 'leave' ? ' · ยื่นใบลา' : ' · ผู้จัดการ'))
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');

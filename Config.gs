@@ -10,6 +10,8 @@
  */
 
 const CONFIG = {
+  // เปลี่ยนทุกครั้งที่แก้โค้ด — ใช้ตรวจว่าเว็บแอปที่ Deploy อยู่เป็นโค้ดล่าสุดหรือไม่
+  VERSION: '2026-10-17.3',
   SPREADSHEET_ID: '10zdLwG_G4M7x7Bmd071pUFWoqBK1Nv_h3fp7Qir2HtY',
   TZ: 'Asia/Bangkok',
   TITLE_ROW: 1,

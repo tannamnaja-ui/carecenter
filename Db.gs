@@ -19,12 +19,23 @@ function getSheet_(name) {
   return sh;
 }
 
-/** หาแผ่นงานตามชื่อปัจจุบัน ถ้าไม่เจอจะลองชื่อเดิมใน SHEET_ALIASES */
+/**
+ * หาแผ่นงาน: 1) ชื่อปัจจุบัน 2) ชื่อเดิมใน SHEET_ALIASES
+ * 3) แผ่นใดก็ได้ที่แถว 3 มีชื่อฟิลด์ตรงกับโครงสร้าง (กรณีมีคนเปลี่ยนชื่อแท็บเอง)
+ */
 function findSheet_(book, name) {
   const sh = book.getSheetByName(name);
   if (sh) return sh;
   const old = (SHEET_ALIASES[name] || []).map(n => book.getSheetByName(n)).filter(Boolean)[0];
-  return old || null;
+  if (old) return old;
+  const schema = SCHEMA[name];
+  if (!schema) return null;
+  const fields = schema.fields.filter(f => !(f[2] && f[2].extra)).map(f => f[0]);
+  return book.getSheets().find(s => {
+    if (s.getLastColumn() === 0 || s.getLastRow() < CONFIG.HEADER_ROW) return false;
+    const headers = s.getRange(CONFIG.HEADER_ROW, 1, 1, s.getLastColumn()).getValues()[0].map(h => String(h).trim());
+    return headers.indexOf(schema.idField) >= 0 && fields.filter(f => headers.indexOf(f) >= 0).length >= Math.min(4, fields.length);
+  }) || null;
 }
 
 function getHeaders_(sh) {
