@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ศูนย์ดวงใจกตัญญู</title>
+  <meta name="description" content="ศูนย์ดวงใจกตัญญู — ดูแลด้วยใจ ซื่อสัตย์ ปลอดภัย วางใจดั่งญาติสนิท">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%230e7c6b' d='M12 21s-7.4-4.5-9.8-9.1C.6 8.6 2.5 4.6 6.2 4.6c2.1 0 3.4 1.1 4.3 2.4.7 1 2.3 1 3 0 .9-1.3 2.2-2.4 4.3-2.4 3.7 0 5.6 4 4 7.3C19.4 16.5 12 21 12 21z'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand: #0e7c6b; --brand-strong: #0a5f52; --brand-soft: #e3f3ef; --heart: #e0457b;
+      --bg: #f5f7f6; --surface: #fff; --ink: #1d2a27; --muted: #5f6f6b; --line: #e1e7e5;
+      --shadow: 0 1px 2px rgba(16,40,34,.06), 0 6px 20px rgba(16,40,34,.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #111917; --surface: #1a2421; --ink: #e7efec; --muted: #9db0aa; --line: #2a3733; --brand-soft: #173a33; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Sarabun', system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; }
+    .hero { background: linear-gradient(135deg, #0e7c6b, #14a38c); color: #fff; padding: 48px 16px 96px; text-align: center; }
+    .mark { width: 64px; height: 64px; border-radius: 18px; background: rgba(255,255,255,.18); display: grid; place-items: center; margin: 0 auto 14px; }
+    .mark svg { width: 36px; height: 36px; }
+    h1 { margin: 0; font-size: clamp(26px, 6vw, 36px); }
+    .slogan { margin: 6px 0 0; font-size: clamp(15px, 3.6vw, 18px); opacity: .9; }
+    .wrap { max-width: 920px; margin: -60px auto 40px; padding: 0 16px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .card { background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 22px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: inherit; border-top: 4px solid var(--brand); transition: transform .15s; }
+    .card:hover { transform: translateY(-2px); }
+    .card.heart { border-top-color: var(--heart); }
+    .card.muted { border-top-color: var(--muted); }
+    .card .icon { font-size: 30px; }
+    .card h2 { margin: 0; font-size: 19px; }
+    .card p { margin: 0; color: var(--muted); font-size: 14.5px; flex: 1; }
+    .card .go { margin-top: 6px; align-self: flex-start; background: var(--brand); color: #fff; font-weight: 600; padding: 8px 16px; border-radius: 9px; font-size: 14.5px; }
+    .card.heart .go { background: var(--heart); }
+    .card.muted .go { background: var(--muted); }
+    .values { max-width: 920px; margin: 0 auto 40px; padding: 0 16px; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); text-align: center; }
+    .values div { background: var(--brand-soft); border-radius: 12px; padding: 14px 10px; font-size: 14px; }
+    .values b { display: block; font-size: 16px; color: var(--brand); }
+    @media (prefers-color-scheme: dark) { .values b { color: #5fd3bd; } }
+    footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 16px 32px; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 21s-7.4-4.5-9.8-9.1C.6 8.6 2.5 4.6 6.2 4.6c2.1 0 3.4 1.1 4.3 2.4.7 1 2.3 1 3 0 .9-1.3 2.2-2.4 4.3-2.4 3.7 0 5.6 4 4 7.3C19.4 16.5 12 21 12 21z"/></svg></div>
+    <h1>ศูนย์ดวงใจกตัญญู</h1>
+    <p class="slogan">ดูแลด้วยใจ ซื่อสัตย์ ปลอดภัย วางใจดั่งญาติสนิท</p>
+  </header>
+
+  <main class="wrap">
+    <a class="card heart" id="lnkBook">
+      <div class="icon">💗</div>
+      <h2>จองบริการดูแล</h2>
+      <p>เฝ้าไข้ รับ-ส่งโรงพยาบาล ดูแลผู้ป่วยติดเตียง ราคาคงที่ ไม่มีค่าใช้จ่ายแอบแฝง</p>
+      <span class="go">จองบริการ →</span>
+    </a>
+    <a class="card" id="lnkLeave">
+      <div class="icon">📝</div>
+      <h2>ยื่นใบลา (ผู้รับจ้าง)</h2>
+      <p>สำหรับบุคลากรของศูนย์ ต้องแจ้งล่วงหน้าอย่างน้อย 7 วันตามสัญญา</p>
+      <span class="go">ยื่นใบลา →</span>
+    </a>
+    <a class="card muted" id="lnkAdmin">
+      <div class="icon">🔐</div>
+      <h2>ผู้จัดการศูนย์</h2>
+      <p>จัดการใบงาน ผู้รับจ้าง การเงิน และใบลา (ต้องใช้รหัสผู้จัดการ)</p>
+      <span class="go">เข้าสู่ระบบ →</span>
+    </a>
+  </main>
+
+  <section class="values">
+    <div><b>ดูแลด้วยใจ</b>ผู้ดูแลผ่านการคัดกรองทักษะ</div>
+    <div><b>ซื่อสัตย์</b>ราคาบาทตายตัว โปร่งใส</div>
+    <div><b>ปลอดภัย</b>ตรวจประวัติอาชญากรรมทุกคน</div>
+    <div><b>วางใจ</b>ดั่งญาติสนิทของครอบครัว</div>
+  </section>
+
+  <footer>© ศูนย์ดวงใจกตัญญู</footer>
+
+  <script>
+    // ลิงก์เว็บแอป Apps Script — เปลี่ยนที่นี่หากมีการ Deploy ใหม่ได้ URL ใหม่
+    const APP_URL = 'https://script.google.com/macros/s/AKfycbzCZYGiPJGYHswFdalSrdFPRkZilyPVeMj479_7BJpgmjhD8ukwj9KwwVleGCpRBAq4gw/exec';
+    document.getElementById('lnkBook').href = APP_URL + '?page=book';
+    document.getElementById('lnkLeave').href = APP_URL + '?page=leave';
+    document.getElementById('lnkAdmin').href = APP_URL;
+  </script>
+</body>
+</html>
