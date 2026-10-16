@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <?!= include_('Styles'); ?>
+  <style>
+    .hero { background: linear-gradient(135deg, #1f6273, #2e8a94); color: #fff; padding: 28px 16px 64px; }
+    .hero-inner { max-width: 640px; margin: 0 auto; }
+    .hero .brand-logo { width: 68px; height: 68px; box-shadow: 0 2px 10px rgba(0,0,0,.2); }
+    .hero .brand-slogan { color: rgba(255,255,255,.85); white-space: normal; }
+    .hero h1 { font-size: 22px; margin-top: 18px; }
+    .hero p { margin: 4px 0 0; color: rgba(255,255,255,.85); font-size: 14px; }
+    .wrap { max-width: 640px; margin: -44px auto 40px; padding: 0 16px; }
+    .section-title { font-size: 15px; font-weight: 700; color: var(--brand-strong); margin: 4px 0 -2px; }
+    .price-line { font-size: 14px; background: var(--brand-soft); color: var(--brand-strong); padding: 8px 12px; border-radius: 10px; }
+    .done { text-align: center; padding: 28px 18px; }
+    .done .big { font-size: 44px; }
+    .done h2 { font-size: 20px; margin: 6px 0; }
+    footer { text-align: center; font-size: 12.5px; color: var(--muted); padding: 0 16px 28px; }
+  </style>
+</head>
+<body>
+  <div class="hero"><div class="hero-inner">
+    <div class="brand">
+      <img class="brand-logo" src="https://tannamnaja-ui.github.io/carecenter/logo.jpg" alt="โลโก้ศูนย์ดวงใจกตัญญู">
+      <div><div class="brand-name"><?= centerName ?></div><div class="brand-slogan"><?= slogan ?></div></div>
+    </div>
+    <? if (mode === 'book') { ?>
+      <h1>จองบริการดูแลผู้ป่วย / ผู้สูงอายุ</h1>
+      <p>กรอกข้อมูลด้านล่าง เจ้าหน้าที่ศูนย์จะติดต่อกลับเพื่อยืนยันและแจ้งช่องทางชำระเงิน</p>
+    <? } else { ?>
+      <h1>ยื่นใบลาหยุดงาน (สำหรับผู้รับจ้าง)</h1>
+      <p>ตามสัญญา ต้องแจ้งลาล่วงหน้าอย่างน้อย 7 วัน เพื่อให้ศูนย์จัดคนแทนได้ทัน</p>
+    <? } ?>
+  </div></div>
+
+  <div class="wrap">
+    <div class="card" id="card"><div class="row"><span class="spinner"></span> กำลังโหลด…</div></div>
+  </div>
+  <footer><?= centerName ?> · <?= slogan ?></footer>
+  <div id="toast" hidden></div>
+
+<script>
+const MODE = <?!= JSON.stringify(mode) ?>;
+const $ = (s, el = document) => el.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const baht = v => Number(v || 0).toLocaleString('th-TH') + ' บาท';
+const api = (fn, ...args) => new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args));
+const errMsg = e => (e && e.message ? e.message : String(e)).replace(/^Error:\s*/, '');
+function nowLocal(addHours = 0) {
+  const d = new Date(Date.now() + addHours * 3600e3); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+}
+const today = () => nowLocal().slice(0, 10);
+const dayDiff = (a, b) => { const p = s => { const m = s.split('-'); return Date.UTC(+m[0], +m[1] - 1, +m[2]); }; return Math.round((p(b) - p(a)) / 864e5); };
+const fmtD = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${+m[1] + 543}` : s; };
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'error'; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 7000);
+}
+async function submitWith(form, fn) {
+  const btn = form.querySelector('button[type=submit]');
+  btn.disabled = true; const old = btn.textContent; btn.innerHTML = '<span class="spinner"></span> กำลังส่ง…';
+  try { await fn(); } catch (e) { toast(errMsg(e)); btn.disabled = false; btn.textContent = old; }
+}
+const data = f => Object.fromEntries(new FormData(f).entries());
+
+api('getPublicInfo').then(info => MODE === 'book' ? renderBooking(info) : renderLeave(info))
+  .catch(e => { $('#card').innerHTML = `<div class="alert alert-danger">${esc(errMsg(e))}</div>`; });
+
+/* ---------------- จองบริการ ---------------- */
+function renderBooking(info) {
+  $('#card').innerHTML = `
+  <form id="f" class="stack">
+    <div class="section-title">1. บริการที่ต้องการ</div>
+    <label class="field">ประเภทบริการ
+      <select name="service_code" required><option value="">— เลือกบริการ —</option>
+        ${info.services.map(s => `<option value="${esc(s.service_code)}">${esc(s.service_name)} — ${baht(s.client_price)}/${esc(s.unit_type || 'ครั้ง')}</option>`).join('')}
+      </select></label>
+    <div class="price-line" id="price" hidden></div>
+    <div class="grid">
+      <label class="field">วันเวลาเริ่ม <input type="datetime-local" name="start_datetime" required min="${nowLocal()}"></label>
+      <label class="field">วันเวลาสิ้นสุด <input type="datetime-local" name="end_datetime" required min="${nowLocal()}"></label>
+    </div>
+    <label class="field">สถานที่ปฏิบัติงาน / โรงพยาบาล <span class="hint">เช่น รพ.ชุมชน ตึกผู้ป่วยใน ห้อง 3 หรือ "ที่บ้าน"</span>
+      <input name="hospital_location"></label>
+
+    <div class="section-title">2. ข้อมูลผู้ติดต่อ (ผู้ว่าจ้าง)</div>
+    <div class="grid">
+      <label class="field">ชื่อ-นามสกุล <input name="client_name" required autocomplete="name"></label>
+      <label class="field">เบอร์โทรศัพท์ <input name="client_phone" inputmode="tel" required autocomplete="tel" placeholder="08xxxxxxxx"></label>
+    </div>
+
+    <div class="section-title">3. ข้อมูลผู้รับการดูแล</div>
+    <div class="grid">
+      <label class="field">ชื่อผู้รับการดูแล <input name="patient_name" required></label>
+      <label class="field">สภาพร่างกาย <select name="patient_condition" required><option value="">— เลือก —</option>
+        ${info.conditions.map(c => `<option>${esc(c)}</option>`).join('')}</select></label>
+      <label class="field full">โรคประจำตัว / ข้อควรระวัง <textarea name="medical_precautions" placeholder="เช่น เบาหวาน, ให้อาหารทางสายยาง, แพ้ยา"></textarea></label>
+      <label class="field full">ที่อยู่ / จุดสังเกตในชุมชน <textarea name="address_location" required placeholder="บ้านเลขที่ หมู่ ตำบล และจุดสังเกต เช่น ตรงข้ามวัด"></textarea></label>
+    </div>
+    <label class="check"><input type="checkbox" required> ยินยอมให้ศูนย์เก็บข้อมูลเพื่อใช้ในการให้บริการดูแลเท่านั้น</label>
+    <button type="submit" class="btn btn-primary" style="width:100%;padding:12px">ส่งคำขอจองบริการ</button>
+  </form>`;
+  const f = $('#f');
+  f.service_code.onchange = () => {
+    const s = info.services.find(x => x.service_code === f.service_code.value);
+    $('#price').hidden = !s;
+    if (s) $('#price').innerHTML = `ค่าบริการ <b>${baht(s.client_price)}</b> ต่อ${esc(s.unit_type || 'ครั้ง')} · ราคาคงที่ ไม่มีค่าใช้จ่ายแอบแฝง`;
+  };
+  f.start_datetime.onchange = () => { if (!f.end_datetime.value) f.end_datetime.value = f.start_datetime.value; f.end_datetime.min = f.start_datetime.value; };
+  f.onsubmit = e => {
+    e.preventDefault();
+    submitWith(f, async () => {
+      const r = await api('submitBooking', data(f));
+      $('#card').innerHTML = `<div class="done"><div class="big">💗</div><h2>ส่งคำขอจองเรียบร้อย</h2>
+        <p>เลขที่ใบงานของคุณ <b>${esc(r.job_id)}</b></p>
+        <p class="muted">${esc(r.service_name)} · ${baht(r.amount)}</p>
+        <div class="alert alert-info" style="text-align:left">เจ้าหน้าที่จะโทรกลับเพื่อยืนยันคิวและแจ้งช่องทางชำระเงิน<br>
+        ศูนย์จะส่งผู้ดูแลลงพื้นที่หลังได้รับชำระเงินแล้วเท่านั้น เพื่อความปลอดภัยของทุกฝ่าย</div></div>`;
+    });
+  };
+}
+
+/* ---------------- ยื่นใบลา ---------------- */
+function renderLeave(info) {
+  $('#card').innerHTML = `
+  <form id="f" class="stack">
+    <div class="grid">
+      <label class="field">รหัสผู้รับจ้าง <input name="worker_id" required placeholder="WK-001" autocapitalize="characters"></label>
+      <label class="field">เบอร์โทร 4 ตัวท้าย <input name="phone_last4" required inputmode="numeric" maxlength="4" pattern="\\d{4}"></label>
+      <label class="field">วันที่เริ่มหยุดงาน <input type="date" name="leave_start_date" required min="${today()}"></label>
+      <label class="field">วันสุดท้ายที่หยุดงาน <input type="date" name="leave_end_date" required min="${today()}"></label>
+    </div>
+    <div id="notice"></div>
+    <label class="field">เหตุผลการลาหยุด <textarea name="leave_reason" required></textarea></label>
+    <button type="submit" class="btn btn-primary" style="width:100%;padding:12px">ส่งใบลา</button>
+  </form>`;
+  const f = $('#f');
+  const check = () => {
+    const s = f.leave_start_date.value;
+    if (!s) { $('#notice').innerHTML = ''; return; }
+    const n = dayDiff(today(), s);
+    $('#notice').innerHTML = n < info.minLeaveDays
+      ? `<div class="alert alert-danger">🔴 ${esc(info.lateLeaveTag)}<br><span style="font-weight:400">แจ้งล่วงหน้าเพียง ${n} วัน (สัญญากำหนด ${info.minLeaveDays} วันขึ้นไป) — ยังส่งได้ แต่จะถูกบันทึกว่าผิดเงื่อนไข และต้องรอศูนย์พิจารณา</span></div>`
+      : `<div class="alert alert-ok">✅ แจ้งล่วงหน้า ${n} วัน ผ่านเกณฑ์ 1 สัปดาห์</div>`;
+  };
+  f.leave_start_date.onchange = () => {
+    if (!f.leave_end_date.value || f.leave_end_date.value < f.leave_start_date.value) f.leave_end_date.value = f.leave_start_date.value;
+    f.leave_end_date.min = f.leave_start_date.value;
+    check();
+  };
+  f.onsubmit = e => {
+    e.preventDefault();
+    submitWith(f, async () => {
+      const r = await api('submitLeave', data(f));
+      $('#card').innerHTML = `<div class="done"><div class="big">${r.late ? '⚠️' : '✅'}</div><h2>ส่งใบลาเรียบร้อย</h2>
+        <p>เลขที่ใบลา <b>${esc(r.leave_id)}</b> · แจ้งล่วงหน้า ${esc(r.notice_days)} วัน</p>
+        ${r.late ? `<div class="alert alert-danger">🔴 ${esc(r.tag)}</div>` : '<div class="alert alert-ok">ผ่านเกณฑ์แจ้งล่วงหน้า 1 สัปดาห์</div>'}
+        ${r.affected.length ? `<p class="small muted">ใบลานี้กระทบงาน ${r.affected.length} รายการ ศูนย์จะจัดคนแทนให้</p>` : ''}
+        <p class="small muted">สถานะ: รอศูนย์ตรวจสอบ — จะแจ้งผลทาง LINE (ถ้าผูกบัญชีไว้)</p></div>`;
+    });
+  };
+}
+</script>
+</body>
+</html>

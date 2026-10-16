@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <?!= include_('Styles'); ?>
+  <style>
+    .login { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+    .login .card { width: 100%; max-width: 380px; }
+    .login .brand { justify-content: center; text-align: left; margin-bottom: 18px; }
+    .login .brand-slogan { white-space: normal; }
+    .login .brand-logo { width: 76px; height: 76px; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 10; background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-inner { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+    .tabs { max-width: 1280px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+    .tabs button {
+      font: inherit; font-weight: 600; font-size: 14px; color: var(--muted);
+      background: none; border: none; border-bottom: 3px solid transparent;
+      padding: 8px 12px 10px; cursor: pointer; white-space: nowrap;
+    }
+    .tabs button.active { color: var(--brand); border-bottom-color: var(--brand); }
+    .tabs .count { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 4px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 12px; text-align: center; }
+    main { max-width: 1280px; margin: 0 auto; padding: 18px 16px 60px; }
+
+    .page-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .page-head h2 { font-size: 20px; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .toolbar input, .toolbar select { width: auto; min-width: 160px; padding: 6px 10px; font-size: 14px; }
+
+    .tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-bottom: 18px; }
+    .tile { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 16px; border-top: 3px solid var(--brand); }
+    .tile .k { font-size: 13px; color: var(--muted); }
+    .tile .v { font-size: 26px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .tile .s { font-size: 12.5px; color: var(--muted); }
+    .tile.alert-tile { border-top-color: var(--danger); background: var(--danger-bg); }
+    .tile.alert-tile .v { color: var(--danger); }
+    .tile.heart { border-top-color: var(--heart); }
+    .two-col { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+    @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+    .card h3 { font-size: 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .list-item { padding: 9px 0; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
+    .list-item:first-of-type { border-top: none; }
+    .list-item .grow { flex: 1; min-width: 0; }
+    .empty { color: var(--muted); font-size: 14px; padding: 6px 0; }
+
+    .table-wrap { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; font-size: 12.5px; color: var(--muted); font-weight: 600; padding: 10px 12px; background: #fafbfb; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr.row-danger td:first-child { box-shadow: inset 4px 0 0 var(--danger); }
+    td .sub { font-size: 12.5px; color: var(--muted); }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    td.actions { white-space: nowrap; text-align: right; }
+
+    dialog { border: none; border-radius: 14px; padding: 0; width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 32px); box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+    dialog::backdrop { background: rgba(16, 30, 27, .45); }
+    .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; position: sticky; top: 0; background: #fff; z-index: 1; }
+    .modal-head h3 { font-size: 17px; flex: 1; }
+    .modal-body { padding: 16px 20px 20px; }
+    .modal-actions { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .price-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .price-box > div { background: var(--brand-soft); border-radius: 10px; padding: 8px 10px; }
+    .price-box .k { font-size: 12px; color: var(--brand-strong); }
+    .price-box .v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    @media (max-width: 480px) { .price-box { grid-template-columns: 1fr; } }
+    .client-info { font-size: 13px; background: #fafbfb; border: 1px dashed var(--line); border-radius: 10px; padding: 8px 12px; }
+    details.excluded { font-size: 13px; margin-top: 6px; }
+    details.excluded summary { cursor: pointer; color: var(--muted); }
+    details.excluded li { margin: 3px 0; }
+    .skill-box { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+    .link-row { display: flex; gap: 8px; align-items: center; }
+    .link-row input { font-size: 13px; }
+  </style>
+</head>
+<body>
+  <!-- ===== Login ===== -->
+  <div id="login" class="login">
+    <form class="card" id="loginForm">
+      <div class="brand">
+        <img class="brand-logo" src="https://tannamnaja-ui.github.io/carecenter/logo.jpg" alt="โลโก้ศูนย์ดวงใจกตัญญู">
+        <div>
+          <div class="brand-name"><?= centerName ?></div>
+          <div class="brand-slogan"><?= slogan ?></div>
+        </div>
+      </div>
+      <div class="stack">
+        <label class="field">รหัสผู้จัดการศูนย์
+          <input type="password" id="pinInput" autocomplete="current-password" required autofocus>
+        </label>
+        <div id="loginError" class="alert alert-danger" hidden></div>
+        <button class="btn btn-primary" style="width:100%" id="loginBtn">เข้าสู่ระบบ</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== App ===== -->
+  <div id="app" hidden>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <img class="brand-logo" src="https://tannamnaja-ui.github.io/carecenter/logo.jpg" alt="โลโก้ศูนย์ดวงใจกตัญญู">
+          <div style="min-width:0">
+            <div class="brand-name"><?= centerName ?></div>
+            <div class="brand-slogan"><?= slogan ?></div>
+          </div>
+        </div>
+        <span class="spacer"></span>
+        <span id="loading" class="spinner" hidden></span>
+        <button class="btn btn-sm" id="refreshBtn" title="โหลดข้อมูลใหม่">↻ รีเฟรช</button>
+        <button class="btn btn-sm btn-ghost" id="logoutBtn">ออกจากระบบ</button>
+      </div>
+      <nav class="tabs" id="tabs"></nav>
+    </header>
+    <main id="main"></main>
+  </div>
+
+  <dialog id="modal">
+    <div class="modal-head"><h3 id="modalTitle"></h3><button class="btn btn-sm btn-ghost" data-close>✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </dialog>
+  <div id="toast" hidden></div>
+
+<script>
+/* ============================================================
+ * State & helpers
+ * ============================================================ */
+const S = { pin: '', d: null, tab: 'dashboard', jobFilter: 'open', jobSearch: '', payFilter: '', leaveFilter: '' };
+try { S.pin = sessionStorage.getItem('dk_pin') || ''; } catch (e) {}
+
+const $ = (sel, el = document) => el.querySelector(sel);
+const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = v => Number(String(v ?? '').replace(/[^\d.-]/g, '')) || 0;
+const baht = v => num(v).toLocaleString('th-TH') + ' ฿';
+
+function api(fn, ...args) {
+  return new Promise((resolve, reject) => {
+    google.script.run.withSuccessHandler(resolve).withFailureHandler(e => reject(e)) [fn](...args);
+  });
+}
+function errMsg(e) { return (e && e.message ? e.message : String(e)).replace(/^Error:\s*/, ''); }
+
+let toastTimer;
+function toast(msg, isError) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = isError ? 'error' : '';
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, isError ? 7000 : 4000);
+}
+
+/** "2026-10-20T08:00" → "20/10/2569 08:00" (ไม่ผ่าน Date เพื่อเลี่ยงปัญหา timezone) */
+function fmt(s, withTime = true) {
+  const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/);
+  if (!m) return s ? esc(s) : '-';
+  return `${m[3]}/${m[2]}/${+m[1] + 543}` + (withTime && m[4] ? ` ${m[4]}:${m[5]}` : '');
+}
+function nowLocal() {
+  const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+}
+const today = () => nowLocal().slice(0, 10);
+const dayDiff = (a, b) => {
+  const p = s => { const m = s.split('-'); return Date.UTC(+m[0], +m[1] - 1, +m[2]); };
+  return Math.round((p(b) - p(a)) / 864e5);
+};
+
+const W = id => S.d.workers.find(w => w.worker_id === id);
+const C = id => S.d.clients.find(c => c.client_id === id);
+const SV = code => S.d.services.find(s => s.service_code === code);
+const JOB = id => S.d.jobs.find(j => j.job_id === id);
+const wName = w => w ? `${w.full_name}${w.nickname ? ' (' + w.nickname + ')' : ''}` : '';
+const phone = v => { let d = String(v || '').replace(/\D/g, ''); if (d.length === 9 && d[0] !== '0') d = '0' + d; return d; };
+
+const BADGE = {
+  payment: { 'รอชำระ': 'b-danger', 'ชำระแล้ว': 'b-ok' },
+  job: { 'รอยืนยัน': 'b-warn', 'กำลังปฏิบัติงาน': 'b-info', 'เสร็จสิ้น': 'b-ok', 'ยกเลิก': '' },
+  worker: { 'พร้อมรับงาน': 'b-ok', 'ติดเคส': 'b-info', 'ลาพัก': 'b-warn', 'พ้นสภาพ': '' },
+  police: { 'ผ่าน': 'b-ok', 'รอดำเนินการ': 'b-warn', 'ไม่ผ่าน': 'b-danger' },
+  payout: { 'เรียบร้อย': 'b-ok', 'รอโอน': 'b-warn', 'โอนแล้ว': 'b-ok' },
+  leave: { 'อนุมัติแล้ว': 'b-ok', 'รอตรวจสอบ': 'b-warn', 'ไม่อนุมัติ': 'b-danger' },
+  trans: { 'รับจากลูกค้า': 'b-ok', 'จ่ายให้คนทำงาน': 'b-info' },
+};
+const badge = (type, v) => `<span class="badge ${(BADGE[type] || {})[v] || ''}">${esc(v || '-')}</span>`;
+const options = (list, selected, placeholder) =>
+  (placeholder !== undefined ? `<option value="">${esc(placeholder)}</option>` : '') +
+  list.map(o => {
+    const [val, label] = Array.isArray(o) ? o : [o, o];
+    return `<option value="${esc(val)}" ${String(val) === String(selected ?? '') ? 'selected' : ''}>${esc(label)}</option>`;
+  }).join('');
+const formData = form => {
+  const o = {};
+  new FormData(form).forEach((v, k) => { if (k in o) o[k] = [].concat(o[k], v); else o[k] = v; });
+  return o;
+};
+const isUnpaid = j => j.payment_status !== S.d.status.PAYMENT.PAID && j.job_status !== S.d.status.JOB.CANCELLED;
+const noRelease = j => isUnpaid(j) && j.worker_id && j.job_status !== S.d.status.JOB.DONE;
+
+/* ============================================================
+ * Login / load
+ * ============================================================ */
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  S.pin = $('#pinInput').value.trim();
+  $('#loginBtn').disabled = true;
+  $('#loginError').hidden = true;
+  try {
+    await load();
+    try { sessionStorage.setItem('dk_pin', S.pin); } catch (e) {}
+    $('#login').hidden = true;
+    $('#app').hidden = false;
+  } catch (err) {
+    $('#loginError').textContent = errMsg(err);
+    $('#loginError').hidden = false;
+  } finally {
+    $('#loginBtn').disabled = false;
+  }
+});
+$('#logoutBtn').onclick = () => {
+  try { sessionStorage.removeItem('dk_pin'); } catch (e) {}
+  location.reload();
+};
+$('#refreshBtn').onclick = () => load().then(() => toast('โหลดข้อมูลล่าสุดแล้ว')).catch(e => toast(errMsg(e), true));
+
+async function load() {
+  $('#loading').hidden = false;
+  try {
+    S.d = await api('getAppData', S.pin);
+    render();
+  } finally {
+    $('#loading').hidden = true;
+  }
+}
+
+if (S.pin) {
+  load().then(() => { $('#login').hidden = true; $('#app').hidden = false; })
+    .catch(() => { S.pin = ''; });
+}
+
+/* ============================================================
+ * Tabs
+ * ============================================================ */
+const TABS = [
+  ['dashboard', 'ภาพรวม'], ['jobs', 'ใบงาน'], ['workers', 'ผู้รับจ้าง'], ['clients', 'ลูกค้า / ผู้ป่วย'],
+  ['services', 'บริการและราคา'], ['payments', 'การเงิน'], ['leaves', 'การลา'], ['links', 'ลิงก์ & LINE'],
+];
+function render() {
+  const d = S.d.dashboard;
+  const counts = { jobs: d.unpaidJobIds.length, leaves: d.pendingLeaveIds.length, payments: d.pendingPayoutCount };
+  $('#tabs').innerHTML = TABS.map(([k, label]) =>
+    `<button data-tab="${k}" class="${S.tab === k ? 'active' : ''}">${label}${counts[k] ? `<span class="count">${counts[k]}</span>` : ''}</button>`).join('');
+  $$('#tabs button').forEach(b => b.onclick = () => { S.tab = b.dataset.tab; render(); });
+  const fn = { dashboard: renderDashboard, jobs: renderJobs, workers: renderWorkers, clients: renderClients,
+    services: renderServices, payments: renderPayments, leaves: renderLeaves, links: renderLinks }[S.tab];
+  $('#main').innerHTML = fn();
+  bindActions();
+}
+
+/** ปุ่มทั้งหมดใช้ data-act="ชื่อ" data-id="..." */
+const ACTIONS = {
+  newJob: () => openJobForm(), editJob: id => openJobForm(id),
+  newWorker: () => openWorkerForm(), editWorker: id => openWorkerForm(id),
+  newClient: () => openClientForm(), editClient: id => openClientForm(id),
+  newService: () => openServiceForm(), editService: id => openServiceForm(id),
+  newPayment: id => openPaymentForm(null, id), editPayment: id => openPaymentForm(id),
+  payout: id => openPaymentForm(id),
+  newLeave: () => openLeaveForm(), reviewLeave: id => openLeaveReview(id),
+  goto: tab => { S.tab = tab; render(); },
+  copy: id => { const el = document.getElementById(id); el.select(); document.execCommand('copy'); toast('คัดลอกลิงก์แล้ว'); },
+};
+function bindActions(root = document) {
+  $$('[data-act]', root).forEach(el => el.onclick = e => { e.preventDefault(); ACTIONS[el.dataset.act](el.dataset.id); });
+  $$('[data-bind]', root).forEach(el => {
+    el.oninput = () => { S[el.dataset.bind] = el.value; const pos = el.selectionStart; render(); const n = $(`[data-bind="${el.dataset.bind}"]`); n.focus(); if (n.setSelectionRange && pos != null) n.setSelectionRange(pos, pos); };
+  });
+}
+
+/* ============================================================
+ * Dashboard
+ * ============================================================ */
+function renderDashboard() {
+  const d = S.d.dashboard;
+  const tile = (k, v, s, cls = '') => `<div class="tile ${cls}"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
+  const jobLine = j => {
+    const c = C(j.client_id) || {};
+    return `<div class="list-item">
+      <div class="grow"><b>${esc(j.job_id)}</b> · ${esc(c.patient_name || j.client_id)}
+        <div class="small muted">${fmt(j.start_datetime)} · ${esc((SV(j.service_code) || {}).service_name || j.service_code)}</div></div>
+      ${noRelease(j) ? '<span class="tag-red">ห้ามปล่อยคน</span>' : ''}
+      <span class="small">${baht(j.total_client_amount)}</span>
+      <button class="btn btn-sm" data-act="editJob" data-id="${esc(j.job_id)}">เปิด</button></div>`;
+  };
+  const list = (ids, fn, empty) => ids.length ? ids.map(fn).join('') : `<div class="empty">${empty}</div>`;
+  const unpaid = d.unpaidJobIds.map(JOB).filter(Boolean);
+  return `
+  <div class="page-head"><h2>ภาพรวมศูนย์</h2></div>
+  <div class="tiles">
+    ${tile('ยอดรายรับรวมจากลูกค้า', baht(d.totalClient), 'ไม่รวมใบงานที่ยกเลิก')}
+    ${tile('รายได้สุทธิของศูนย์', baht(d.totalCenter), 'กำไรสะสมจากค่าบริหาร', 'heart')}
+    ${tile('ค่าจ้างคนทำงานทั้งหมด', baht(d.totalWorker), d.pendingPayoutCount ? `รอโอน ${d.pendingPayoutCount} รายการ · ${baht(d.pendingPayoutSum)}` : 'ไม่มีค้างโอน')}
+    ${tile('งานทั้งหมด', d.jobsTotal, `สำเร็จ ${d.jobsDone} · กำลังทำ ${d.jobsActive} · รอยืนยัน ${d.jobsPending}`)}
+    ${tile('⚠️ ใบงานรอลูกค้าชำระ', d.unpaidJobIds.length, 'ห้ามปล่อยคนลงพื้นที่', d.unpaidJobIds.length ? 'alert-tile' : '')}
+    ${tile('คนทำงานพร้อมลงงานทันที', d.readyWorkers, `จากทั้งหมด ${S.d.workers.length} คน`)}
+  </div>
+  <div class="two-col">
+    <div class="card"><h3>⛔ รอลูกค้าชำระเงิน <span class="badge b-danger">${unpaid.length}</span></h3>
+      ${list(unpaid, jobLine, 'ไม่มีใบงานค้างชำระ 🎉')}</div>
+    <div class="card"><h3>👤 ยังไม่ได้จัดคนทำงาน <span class="badge b-warn">${d.unassignedJobIds.length}</span></h3>
+      ${list(d.unassignedJobIds.map(JOB).filter(Boolean), jobLine, 'ทุกใบงานมีคนรับผิดชอบแล้ว')}</div>
+    <div class="card"><h3>📝 ใบลารอพิจารณา <span class="badge b-warn">${d.pendingLeaveIds.length}</span></h3>
+      ${list(d.pendingLeaveIds.map(id => S.d.leaves.find(l => l.leave_id === id)).filter(Boolean), l => `
+        <div class="list-item"><div class="grow"><b>${esc(l.leave_id)}</b> · ${esc(wName(W(l.worker_id)) || l.worker_id)}
+          <div class="small muted">หยุด ${fmt(l.leave_start_date, false)} – ${fmt(l.leave_end_date, false)} · แจ้งล่วงหน้า ${esc(l.notice_days)} วัน</div></div>
+          ${l._late ? `<span class="tag-red">${esc(S.d.config.lateLeaveTag)}</span>` : ''}
+          <button class="btn btn-sm" data-act="reviewLeave" data-id="${esc(l.leave_id)}">พิจารณา</button></div>`, 'ไม่มีใบลาค้าง')}</div>
+    <div class="card"><h3>⏰ งานที่จะเริ่มใน 48 ชม.</h3>
+      ${list(d.upcomingJobIds.map(JOB).filter(Boolean), jobLine, 'ไม่มีงานใน 48 ชม.ข้างหน้า')}</div>
+  </div>`;
+}
+
+/* ============================================================
+ * Jobs
+ * ============================================================ */
+function renderJobs() {
+  const st = S.d.status.JOB;
+  const q = S.jobSearch.trim().toLowerCase();
+  const rows = S.d.jobs.filter(j => {
+    if (S.jobFilter === 'open' && (j.job_status === st.DONE || j.job_status === st.CANCELLED)) return false;
+    if (S.jobFilter === 'unpaid' && !isUnpaid(j)) return false;
+    if (S.jobFilter === 'unassigned' && j.worker_id) return false;
+    if (S.jobFilter && !['open', 'unpaid', 'unassigned'].includes(S.jobFilter) && j.job_status !== S.jobFilter) return false;
+    if (!q) return true;
+    const c = C(j.client_id) || {}, w = W(j.worker_id) || {};
+    return [j.job_id, c.client_name, c.patient_name, w.full_name, w.nickname, j.hospital_location].join(' ').toLowerCase().includes(q);
+  }).sort((a, b) => String(b.start_datetime).localeCompare(String(a.start_datetime)));
+
+  return `
+  <div class="page-head"><h2>ใบงานและการนัดหมาย</h2><span class="spacer"></span>
+    <div class="toolbar">
+      <input type="search" placeholder="ค้นหา รหัส / ชื่อ / สถานที่" value="${esc(S.jobSearch)}" data-bind="jobSearch">
+      <select data-bind="jobFilter">${options([['open', 'งานที่ยังไม่ปิด'], ['', 'ทั้งหมด'], ['unpaid', '⚠️ รอชำระ'], ['unassigned', 'ยังไม่จัดคน'],
+        ...S.d.options.job_status.map(s => [s, s])], S.jobFilter)}</select>
+      <button class="btn btn-primary" data-act="newJob">+ สร้างใบงาน</button>
+    </div></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>ใบงาน</th><th>วันเวลา</th><th>ผู้ป่วย / ผู้ว่าจ้าง</th><th>บริการ</th><th>ผู้รับจ้าง</th><th style="text-align:right">ยอดเงิน</th><th>ชำระ</th><th>สถานะงาน</th><th></th></tr></thead>
+    <tbody>${rows.map(j => {
+      const c = C(j.client_id) || {}, w = W(j.worker_id), s = SV(j.service_code) || {};
+      return `<tr class="${noRelease(j) ? 'row-danger' : ''}">
+        <td><b>${esc(j.job_id)}</b>${noRelease(j) ? '<div><span class="tag-red">ห้ามปล่อยคน</span></div>' : ''}</td>
+        <td>${fmt(j.start_datetime)}<div class="sub">ถึง ${fmt(j.end_datetime)}</div></td>
+        <td>${esc(c.patient_name || '-')}<div class="sub">${esc(c.client_name || j.client_id)} · ${esc(phone(c.client_phone))}</div></td>
+        <td>${esc(s.service_name || j.service_code)}<div class="sub">${esc(j.hospital_location || '')}</div></td>
+        <td>${w ? esc(wName(w)) + `<div class="sub">${esc(w.worker_id)}</div>` : '<span class="badge b-warn">ยังไม่จัดคน</span>'}</td>
+        <td class="num">${baht(j.total_client_amount)}<div class="sub">ศูนย์ ${baht(j.total_center_fee)} · คนงาน ${baht(j.total_worker_wage)}</div></td>
+        <td>${badge('payment', j.payment_status)}${isUnpaid(j) && j._paid ? `<div class="sub">รับแล้ว ${baht(j._paid)}</div>` : ''}</td>
+        <td>${badge('job', j.job_status)}</td>
+        <td class="actions">${isUnpaid(j) ? `<button class="btn btn-sm" data-act="newPayment" data-id="${esc(j.job_id)}">รับเงิน</button> ` : ''}<button class="btn btn-sm" data-act="editJob" data-id="${esc(j.job_id)}">แก้ไข</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="9" class="empty">ไม่พบใบงาน</td></tr>'}</tbody></table></div>`;
+}
+
+function openModal(title, html) {
+  $('#modalTitle').textContent = title;
+  $('#modalBody').innerHTML = html;
+  const dlg = $('#modal');
+  if (!dlg.open) dlg.showModal();
+  $$('[data-close]', dlg).forEach(b => b.onclick = () => dlg.close());
+  bindActions($('#modalBody'));
+}
+const closeModal = () => $('#modal').close();
+
+async function submitWith(form, fn) {
+  const btn = $('button[type=submit]', form);
+  btn.disabled = true;
+  const old = btn.textContent;
+  btn.innerHTML = '<span class="spinner"></span> กำลังบันทึก';
+  try {
+    await fn();
+  } catch (e) {
+    toast(errMsg(e), true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+}
+
+function openJobForm(id) {
+  const j = id ? JOB(id) : null;
+  const ST = S.d.status;
+  const clientOpts = S.d.clients.map(c => [c.client_id, `${c.client_id} · ${c.patient_name} (ญาติ: ${c.client_name})`]);
+  const svcOpts = S.d.services.map(s => [s.service_code, `${s.service_code} · ${s.service_name} — ${baht(s.client_price)}/${s.unit_type || 'ครั้ง'}`]);
+  openModal(j ? `แก้ไขใบงาน ${j.job_id}` : 'สร้างใบงานใหม่', `
+  <form id="jobForm">
+    <div class="grid">
+      <label class="field full">ผู้ว่าจ้าง / ผู้รับการดูแล
+        <select name="client_id" required>${options(clientOpts, j?.client_id, '— เลือกลูกค้า —')}</select>
+        <span class="hint">ยังไม่มีในรายชื่อ? เพิ่มที่แท็บ "ลูกค้า / ผู้ป่วย" ก่อน</span></label>
+      <div class="full client-info" id="clientInfo" hidden></div>
+      <label class="field full">ประเภทบริการ
+        <select name="service_code" required>${options(svcOpts, j?.service_code, '— เลือกบริการ —')}</select></label>
+      <div class="full">
+        <div class="price-box" id="priceBox"></div>
+        <div class="small muted" style="margin-top:4px">🔒 ยอดเงินดึงจากตารางบริการอัตโนมัติ แก้ไขด้วยมือไม่ได้</div>
+      </div>
+      <label class="field">วันเวลาเริ่มงาน <input type="datetime-local" name="start_datetime" required value="${esc(j?.start_datetime || '')}"></label>
+      <label class="field">วันเวลาเสร็จงาน <input type="datetime-local" name="end_datetime" required value="${esc(j?.end_datetime || '')}"></label>
+      <label class="field full">สถานที่ / โรงพยาบาล (ตึก ห้องตรวจ หรือบ้านลูกค้า)
+        <input name="hospital_location" value="${esc(j?.hospital_location || '')}"></label>
+      <div class="full">
+        <label class="field">ผู้รับจ้างที่ส่งไปปฏิบัติงาน
+          <select name="worker_id" id="workerSelect"><option value="">— เลือกบริการและวันเวลาก่อน —</option></select></label>
+        <div class="small muted" id="matchInfo" style="margin-top:4px"></div>
+        <details class="excluded" id="excluded" hidden></details>
+      </div>
+      <label class="field">สถานะการเก็บเงิน <select name="payment_status">${options(S.d.options.payment_status, j?.payment_status || ST.PAYMENT.PENDING)}</select></label>
+      <label class="field">สถานะการปฏิบัติงาน <select name="job_status">${options(S.d.options.job_status, j?.job_status || ST.JOB.PENDING)}</select></label>
+      <div class="full" id="payWarn"></div>
+    </div>
+    <div class="row modal-actions">
+      ${j && isUnpaid(j) ? `<button type="button" class="btn" data-act="newPayment" data-id="${esc(j.job_id)}">บันทึกรับเงิน</button>` : ''}
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>ปิด</button>
+      <button type="submit" class="btn btn-primary">บันทึกใบงาน</button>
+    </div>
+  </form>`);
+
+  const f = $('#jobForm');
+  let reqNo = 0;
+
+  const showClient = () => {
+    const c = C(f.client_id.value);
+    const box = $('#clientInfo');
+    box.hidden = !c;
+    if (!c) return;
+    box.innerHTML = `<b>${esc(c.patient_name)}</b> · ${esc(c.patient_condition || '-')}
+      ${c.medical_precautions ? `<div>⚕️ ข้อควรระวัง: ${esc(c.medical_precautions)}</div>` : ''}
+      <div>📍 ${esc(c.address_location || '-')}</div><div>📞 ญาติ: ${esc(c.client_name)} ${esc(phone(c.client_phone))}</div>`;
+    f.hospital_location.placeholder = c.address_location || '';
+  };
+  const showPrice = () => {
+    const s = SV(f.service_code.value);
+    const same = j && s && j.service_code === s.service_code;
+    const v = s ? (same
+      ? [j.total_client_amount, j.total_center_fee, j.total_worker_wage]
+      : [s.total_client_amount, s.total_center_fee, s.total_worker_wage]) : [0, 0, 0];
+    $('#priceBox').innerHTML = [['ราคาเรียกเก็บลูกค้า', v[0]], ['ศูนย์หักค่าบริหาร', v[1]], ['คนทำงานได้รับสุทธิ', v[2]]]
+      .map(([k, n]) => `<div><div class="k">${k}</div><div class="v">${s ? baht(n) : '–'}</div></div>`).join('');
+  };
+  const showPayWarn = () => {
+    const unpaid = f.payment_status.value !== ST.PAYMENT.PAID;
+    const releasing = [ST.JOB.ACTIVE, ST.JOB.DONE].includes(f.job_status.value);
+    const btn = $('button[type=submit]', f);
+    btn.disabled = unpaid && releasing;
+    $('#payWarn').innerHTML = !unpaid ? '' : releasing
+      ? `<div class="alert alert-danger">⛔ ห้ามปล่อยคนลงพื้นที่! ใบงานนี้ยัง "รอชำระ" — ต้องบันทึกรับเงินจากลูกค้าก่อนเปลี่ยนสถานะเป็น "${esc(f.job_status.value)}"</div>`
+      : `<div class="alert alert-warn">⚠️ ลูกค้ายังไม่ชำระเงิน — บันทึกใบงานได้ แต่ห้ามปล่อยคนลงพื้นที่จนกว่าจะชำระ</div>`;
+  };
+  const loadWorkers = async () => {
+    const sel = $('#workerSelect');
+    const keep = sel.value || j?.worker_id || '';
+    if (!f.service_code.value) {
+      $('#matchInfo').textContent = 'เลือกประเภทบริการเพื่อกรองผู้รับจ้าง';
+      return;
+    }
+    const my = ++reqNo;
+    $('#matchInfo').innerHTML = '<span class="spinner"></span> กำลังคัดกรองผู้รับจ้าง…';
+    try {
+      const r = await api('getEligibleWorkers', S.pin, f.service_code.value, f.start_datetime.value, f.end_datetime.value, j?.job_id || '', j?.worker_id || '');
+      if (my !== reqNo) return;
+      const opts = r.eligible.map(w => [w.worker_id, `${w.label} · ${w.village_moo || '-'}${w.has_car ? ' · 🚗' : ''}`]);
+      const keptBad = keep && !r.eligible.some(w => w.worker_id === keep) ? r.excluded.find(w => w.worker_id === keep) : null;
+      if (keptBad) opts.unshift([keep, `⚠️ ${keptBad.label} — ${keptBad.reasons.join(', ')}`]);
+      sel.innerHTML = options(opts, keep, r.eligible.length ? '— ยังไม่มอบหมาย —' : '— ไม่มีผู้รับจ้างที่ตรงเงื่อนไข —');
+      const rules = ['ทักษะตรงงาน', 'สถานะ "พร้อมรับงาน"'];
+      if (S.d.config.requirePoliceCheck) rules.push('ตรวจประวัติผ่าน');
+      if (r.requiresCar) rules.push('🚗 มีรถส่วนตัว');
+      if (f.start_datetime.value && f.end_datetime.value) rules.push('ไม่ชนเวลางานอื่น/วันลา');
+      $('#matchInfo').innerHTML = `พบผู้รับจ้างที่ส่งได้ <b>${r.eligible.length}</b> คน — กรองตาม: ${rules.join(' · ')}` +
+        (!f.start_datetime.value || !f.end_datetime.value ? ' <span class="badge b-warn">ใส่วันเวลาเพื่อเช็คงานชนกัน</span>' : '');
+      const ex = $('#excluded');
+      ex.hidden = !r.excluded.length;
+      ex.innerHTML = `<summary>ดูผู้ที่ถูกคัดออก (${r.excluded.length} คน)</summary><ul>` +
+        r.excluded.map(w => `<li><b>${esc(w.label)}</b> — ${esc(w.reasons.join(' / '))}</li>`).join('') + '</ul>';
+    } catch (e) {
+      if (my === reqNo) $('#matchInfo').innerHTML = `<span style="color:var(--danger)">${esc(errMsg(e))}</span>`;
+    }
+  };
+
+  f.client_id.onchange = showClient;
+  f.service_code.onchange = () => { showPrice(); loadWorkers(); };
+  f.start_datetime.onchange = () => {
+    if (f.start_datetime.value && !f.end_datetime.value) f.end_datetime.value = f.start_datetime.value;
+    loadWorkers();
+  };
+  f.end_datetime.onchange = loadWorkers;
+  f.payment_status.onchange = f.job_status.onchange = showPayWarn;
+  showClient(); showPrice(); showPayWarn();
+  if (j) loadWorkers();
+
+  f.onsubmit = e => {
+    e.preventDefault();
+    const data = formData(f);
+    if (j) data.job_id = j.job_id;
+    submitWith(f, async () => {
+      const r = await api('saveJob', S.pin, data);
+      closeModal();
+      toast(`บันทึกใบงาน ${r.job.job_id} แล้ว` + (r.warnings.length ? '\n' + r.warnings.join('\n') : ''));
+      await load();
+    });
+  };
+}
+
+/* ============================================================
+ * Workers
+ * ============================================================ */
+function allSkills() {
+  const set = new Set(S.d.options.skill_tags);
+  const split = v => String(v || '').split(/[,;|\n]+/).map(s => s.trim()).filter(Boolean);
+  S.d.workers.forEach(w => split(w.skill_tags).forEach(t => set.add(t)));
+  S.d.services.forEach(s => split(s.required_skill).forEach(t => set.add(t)));
+  return [...set];
+}
+const hasCar = v => v === true || ['true', 'มี', 'yes', '1'].includes(String(v).trim().toLowerCase());
+
+function renderWorkers() {
+  return `
+  <div class="page-head"><h2>ทะเบียนบุคลากร / ผู้รับจ้าง</h2><span class="spacer"></span>
+    <button class="btn btn-primary" data-act="newWorker">+ เพิ่มผู้รับจ้าง</button></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>รหัส</th><th>ชื่อ</th><th>ติดต่อ / พื้นที่</th><th>ทักษะ</th><th>รถ</th><th>ตรวจประวัติ</th><th>สถานะ</th><th>LINE</th><th></th></tr></thead>
+    <tbody>${S.d.workers.map(w => `<tr>
+      <td><b>${esc(w.worker_id)}</b></td>
+      <td>${esc(w.full_name)}<div class="sub">${esc(w.nickname || '')}</div></td>
+      <td>${esc(phone(w.phone_number))}<div class="sub">${esc(w.village_moo || '')}</div></td>
+      <td>${String(w.skill_tags || '').split(/[,;]+/).filter(s => s.trim()).map(s => `<span class="badge b-brand">${esc(s.trim())}</span>`).join(' ')}</td>
+      <td>${hasCar(w.has_car) ? '🚗 มี' : '<span class="muted">–</span>'}</td>
+      <td>${badge('police', w.police_check_status)}</td>
+      <td>${badge('worker', w.status)}</td>
+      <td>${w.line_user_id ? '<span class="badge b-ok">ผูกแล้ว</span>' : '<span class="muted small">ยังไม่ผูก</span>'}</td>
+      <td class="actions"><button class="btn btn-sm" data-act="editWorker" data-id="${esc(w.worker_id)}">แก้ไข</button></td>
+    </tr>`).join('') || '<tr><td colspan="9" class="empty">ยังไม่มีผู้รับจ้าง</td></tr>'}</tbody></table></div>`;
+}
+
+function openWorkerForm(id) {
+  const w = id ? W(id) : null;
+  const mine = String(w?.skill_tags || '').split(/[,;|]+/).map(s => s.trim()).filter(Boolean);
+  openModal(w ? `แก้ไขผู้รับจ้าง ${w.worker_id}` : 'เพิ่มผู้รับจ้างใหม่', `
+  <form id="workerForm"><div class="grid">
+    <label class="field">ชื่อ-นามสกุล (ตามบัตรประชาชน) <input name="full_name" required value="${esc(w?.full_name || '')}"></label>
+    <label class="field">ชื่อเล่น <input name="nickname" value="${esc(w?.nickname || '')}"></label>
+    <label class="field">เลขบัตรประชาชน 13 หลัก <input name="id_card_no" inputmode="numeric" maxlength="17" value="${esc(String(w?.id_card_no || ''))}"></label>
+    <label class="field">เบอร์โทรศัพท์ <input name="phone_number" inputmode="tel" required value="${esc(phone(w?.phone_number))}"></label>
+    <label class="field full">ที่อยู่ / หมู่บ้าน / ตำบล <input name="village_moo" value="${esc(w?.village_moo || '')}"></label>
+    <div class="field full">ทักษะงานที่ทำได้
+      <div class="skill-box">${allSkills().map(s => `<label class="check"><input type="checkbox" name="skill_tags" value="${esc(s)}" ${mine.includes(s) ? 'checked' : ''}> ${esc(s)}</label>`).join('')}</div>
+      <input name="skill_extra" placeholder="ทักษะอื่น (คั่นด้วย ,)"></div>
+    <label class="check full"><input type="checkbox" name="has_car" ${hasCar(w?.has_car) ? 'checked' : ''}> มียานพาหนะส่วนตัว (รถยนต์/กระบะ) รับ-ส่ง รพ. ได้</label>
+    <label class="field">สถานะตรวจประวัติอาชญากรรม <select name="police_check_status">${options(S.d.options.police_check_status, w?.police_check_status || 'รอดำเนินการ')}</select></label>
+    <label class="field">สถานะความพร้อมรับงาน <select name="status">${options(S.d.options.worker_status, w?.status || 'พร้อมรับงาน')}</select></label>
+    <label class="field">วันที่เซ็นสัญญา <input type="date" name="contract_signed_date" value="${esc(String(w?.contract_signed_date || '').slice(0, 10))}"></label>
+    <label class="field">LINE <input readonly value="${w?.line_user_id ? 'ผูกบัญชีแล้ว' : 'ยังไม่ผูก — ให้พิมพ์ในแชต LINE ของศูนย์: ลงทะเบียน ' + esc(w?.worker_id || 'WK-xxx') + ' เบอร์4ตัวท้าย'}"></label>
+    <label class="field full">หมายเหตุ / บุคคลรับรองในพื้นที่ <textarea name="notes">${esc(w?.notes || '')}</textarea></label>
+  </div>
+  <div class="row modal-actions"><span class="spacer"></span>
+    <button type="button" class="btn" data-close>ปิด</button><button type="submit" class="btn btn-primary">บันทึก</button></div></form>`);
+  const f = $('#workerForm');
+  f.onsubmit = e => {
+    e.preventDefault();
+    const d = formData(f);
+    const skills = [].concat(d.skill_tags || [], String(d.skill_extra || '').split(',').map(s => s.trim()).filter(Boolean));
+    d.skill_tags = [...new Set(skills)];
+    d.has_car = f.has_car.checked;
+    delete d.skill_extra;
+    if (w) d.worker_id = w.worker_id;
+    submitWith(f, async () => {
+      const r = await api('saveWorker', S.pin, d);
+      closeModal(); toast(`บันทึก ${r.worker_id} แล้ว`); await load();
+    });
+  };
+}
+
+/* ============================================================
+ * Clients
+ * ============================================================ */
+function renderClients() {
+  return `
+  <div class="page-head"><h2>ทะเบียนผู้ว่าจ้างและผู้ป่วย</h2><span class="spacer"></span>
+    <button class="btn btn-primary" data-act="newClient">+ เพิ่มลูกค้า</button></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>รหัส</th><th>ผู้ว่าจ้าง</th><th>ผู้รับการดูแล</th><th>สภาพร่างกาย</th><th>ข้อควรระวัง</th><th>ที่อยู่หน้างาน</th><th>วันที่เปิดประวัติ</th><th></th></tr></thead>
+    <tbody>${S.d.clients.map(c => `<tr>
+      <td><b>${esc(c.client_id)}</b></td>
+      <td>${esc(c.client_name)}<div class="sub">${esc(phone(c.client_phone))}</div></td>
+      <td>${esc(c.patient_name)}</td>
+      <td>${c.patient_condition ? `<span class="badge ${c.patient_condition === 'ติดเตียง' ? 'b-warn' : 'b-brand'}">${esc(c.patient_condition)}</span>` : '-'}</td>
+      <td class="small">${esc(c.medical_precautions || '-')}</td>
+      <td class="small">${esc(c.address_location || '-')}</td>
+      <td>${fmt(c.created_date, false)}</td>
+      <td class="actions"><button class="btn btn-sm" data-act="editClient" data-id="${esc(c.client_id)}">แก้ไข</button></td>
+    </tr>`).join('') || '<tr><td colspan="8" class="empty">ยังไม่มีลูกค้า</td></tr>'}</tbody></table></div>`;
+}
+
+function openClientForm(id) {
+  const c = id ? C(id) : null;
+  openModal(c ? `แก้ไขลูกค้า ${c.client_id}` : 'เพิ่มลูกค้าใหม่', `
+  <form id="clientForm"><div class="grid">
+    <label class="field">ชื่อผู้ว่าจ้าง (คนจ่ายเงิน/ลูกหลาน) <input name="client_name" required value="${esc(c?.client_name || '')}"></label>
+    <label class="field">เบอร์โทรศัพท์ผู้ว่าจ้าง <input name="client_phone" inputmode="tel" required value="${esc(phone(c?.client_phone))}"></label>
+    <label class="field">ชื่อผู้รับการดูแล (คนไข้/คนชรา) <input name="patient_name" required value="${esc(c?.patient_name || '')}"></label>
+    <label class="field">สภาพร่างกาย <select name="patient_condition">${options(S.d.options.patient_condition, c?.patient_condition, '— เลือก —')}</select></label>
+    <label class="field full">โรคประจำตัว / ข้อควรระวังทางการแพทย์ <textarea name="medical_precautions" placeholder="เช่น เบาหวาน, ให้อาหารสายยาง, แพ้ยา">${esc(c?.medical_precautions || '')}</textarea></label>
+    <label class="field full">ที่อยู่หน้างาน / จุดสังเกตในชุมชน <textarea name="address_location">${esc(c?.address_location || '')}</textarea></label>
+  </div>
+  <div class="row modal-actions"><span class="spacer"></span>
+    <button type="button" class="btn" data-close>ปิด</button><button type="submit" class="btn btn-primary">บันทึก</button></div></form>`);
+  const f = $('#clientForm');
+  f.onsubmit = e => {
+    e.preventDefault();
+    const d = formData(f);
+    if (c) d.client_id = c.client_id;
+    submitWith(f, async () => {
+      const r = await api('saveClient', S.pin, d);
+      closeModal(); toast(`บันทึก ${r.client_id} แล้ว`); await load();
+    });
+  };
+}
+
+/* ============================================================
+ * Services
+ * ============================================================ */
+function renderServices() {
+  return `
+  <div class="page-head"><h2>ตารางบริการและราคา (เงินบาทตายตัว)</h2><span class="spacer"></span>
+    <button class="btn btn-primary" data-act="newService">+ เพิ่มบริการ</button></div>
+  <div class="alert alert-info" style="margin-bottom:12px">ราคาในตารางนี้ถูกดึงไปใส่ใบงานอัตโนมัติทันทีที่เลือกบริการ — ผู้ใช้ไม่ต้องพิมพ์ตัวเลขเองในใบงาน</div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>รหัส</th><th>บริการ</th><th>หน่วย</th><th style="text-align:right">ราคาลูกค้า</th><th style="text-align:right">ศูนย์หัก</th><th style="text-align:right">คนทำงานได้</th><th>เงื่อนไขคัดคน</th><th></th></tr></thead>
+    <tbody>${S.d.services.map(s => `<tr>
+      <td><b>${esc(s.service_code)}</b></td>
+      <td>${esc(s.service_name)}</td>
+      <td>${esc(s.unit_type || '-')}</td>
+      <td class="num">${baht(s.client_price)}</td>
+      <td class="num">${baht(s.center_fee)}</td>
+      <td class="num"><b>${baht(s.total_worker_wage)}</b></td>
+      <td class="small">${s.required_skill ? 'ทักษะ: ' + esc(s.required_skill) : '<span class="muted">เทียบทักษะจากชื่อบริการ</span>'}${s._requires_car ? ' · <span class="badge b-info">🚗 ต้องมีรถ</span>' : ''}</td>
+      <td class="actions"><button class="btn btn-sm" data-act="editService" data-id="${esc(s.service_code)}">แก้ไข</button></td>
+    </tr>`).join('') || '<tr><td colspan="8" class="empty">ยังไม่มีบริการ</td></tr>'}</tbody></table></div>`;
+}
+
+function openServiceForm(code) {
+  const s = code ? SV(code) : null;
+  const req = String(s?.required_skill || '').split(/[,;|]+/).map(x => x.trim()).filter(Boolean);
+  openModal(s ? `แก้ไขบริการ ${s.service_code}` : 'เพิ่มบริการใหม่', `
+  <form id="svcForm"><div class="grid">
+    <label class="field full">ชื่อประเภทบริการและลักษณะงาน <input name="service_name" required value="${esc(s?.service_name || '')}" placeholder="เช่น รับ-ส่ง รพ. ด้วยรถผู้รับจ้าง"></label>
+    <label class="field">หน่วยคิดบริการ <select name="unit_type">${options(S.d.options.unit_type, s?.unit_type || 'ครั้ง')}</select></label>
+    <span></span>
+    <label class="field">ราคาเรียกเก็บจากลูกค้า (บาท) <input type="number" min="1" step="1" name="client_price" required value="${esc(s ? num(s.client_price) : '')}"></label>
+    <label class="field">ศูนย์หักค่าบริหารจัดการ (บาท) <input type="number" min="0" step="1" name="center_fee" required value="${esc(s ? num(s.center_fee) : '')}"></label>
+    <label class="field">ผู้รับจ้างได้รับสุทธิ (บาท) <input readonly id="wagePreview"><span class="hint">= ราคาลูกค้า − ค่าบริหารศูนย์</span></label>
+    <span></span>
+    <div class="field full">ทักษะที่ต้องมี (เว้นว่าง = เทียบจากชื่อบริการ)
+      <div class="skill-box">${allSkills().map(t => `<label class="check"><input type="checkbox" name="required_skill" value="${esc(t)}" ${req.includes(t) ? 'checked' : ''}> ${esc(t)}</label>`).join('')}</div></div>
+    <label class="check full"><input type="checkbox" name="requires_car" ${s?._requires_car ? 'checked' : ''}> ต้องใช้รถของผู้รับจ้าง (คัดเฉพาะคนที่มีรถ)</label>
+  </div>
+  <div class="row modal-actions"><span class="spacer"></span>
+    <button type="button" class="btn" data-close>ปิด</button><button type="submit" class="btn btn-primary">บันทึก</button></div></form>`);
+  const f = $('#svcForm');
+  const wage = () => { $('#wagePreview').value = baht(num(f.client_price.value) - num(f.center_fee.value)); };
+  f.client_price.oninput = f.center_fee.oninput = wage; wage();
+  f.onsubmit = e => {
+    e.preventDefault();
+    const d = formData(f);
+    d.required_skill = [].concat(d.required_skill || []);
+    d.requires_car = f.requires_car.checked;
+    if (s) d.service_code = s.service_code;
+    submitWith(f, async () => {
+      const r = await api('saveService', S.pin, d);
+      closeModal(); toast(`บันทึก ${r.service_code} แล้ว`); await load();
+    });
+  };
+}
+
+/* ============================================================
+ * Payments
+ * ============================================================ */
+function renderPayments() {
+  const rows = S.d.payments.filter(p =>
+    !S.payFilter || p.trans_type === S.payFilter || p.payout_status === S.payFilter
+  ).sort((a, b) => String(b.trans_id).localeCompare(String(a.trans_id), undefined, { numeric: true }));
+  return `
+  <div class="page-head"><h2>บันทึกการเงินและสลิป</h2><span class="spacer"></span>
+    <div class="toolbar">
+      <select data-bind="payFilter">${options([['', 'ทุกรายการ'], ...S.d.options.trans_type.map(t => [t, t]), ['รอโอน', '⏳ รอโอนให้คนทำงาน']], S.payFilter)}</select>
+      <button class="btn btn-primary" data-act="newPayment">+ บันทึกรายการเงิน</button></div></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>รหัส</th><th>ใบงาน</th><th>ประเภท</th><th style="text-align:right">จำนวนเงิน</th><th>วันเวลาโอน</th><th>สลิป</th><th>สถานะ</th><th></th></tr></thead>
+    <tbody>${rows.map(p => {
+      const j = JOB(p.job_id) || {}, c = C(j.client_id) || {}, w = W(j.worker_id);
+      return `<tr>
+        <td><b>${esc(p.trans_id)}</b></td>
+        <td>${esc(p.job_id)}<div class="sub">${esc(p.trans_type === 'จ่ายให้คนทำงาน' ? wName(w) : c.patient_name || '')}</div></td>
+        <td>${badge('trans', p.trans_type)}</td>
+        <td class="num">${baht(p.amount)}</td>
+        <td>${fmt(p.trans_datetime)}</td>
+        <td>${p.slip_image_url ? `<a href="${esc(p.slip_image_url)}" target="_blank" rel="noopener">ดูสลิป</a>` : '<span class="muted">–</span>'}</td>
+        <td>${badge('payout', p.payout_status)}</td>
+        <td class="actions">${p.payout_status === 'รอโอน' ? `<button class="btn btn-sm btn-primary" data-act="payout" data-id="${esc(p.trans_id)}">โอนแล้ว</button> ` : ''}<button class="btn btn-sm" data-act="editPayment" data-id="${esc(p.trans_id)}">แก้ไข</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" class="empty">ยังไม่มีรายการ</td></tr>'}</tbody></table></div>`;
+}
+
+function openPaymentForm(transId, jobId) {
+  const p = transId ? S.d.payments.find(x => x.trans_id === transId) : null;
+  const ST = S.d.status;
+  const isPayout = p && p.payout_status === ST.PAYOUT.WAITING;
+  const jobs = S.d.jobs.filter(j => j.job_status !== ST.JOB.CANCELLED || j.job_id === p?.job_id);
+  const jobOpts = jobs.map(j => {
+    const c = C(j.client_id) || {};
+    return [j.job_id, `${j.job_id} · ${c.patient_name || ''} · ${baht(j.total_client_amount)} (${j.payment_status})`];
+  });
+  openModal(p ? `แก้ไขรายการ ${p.trans_id}` : 'บันทึกรายการเงิน', `
+  <form id="payForm"><div class="grid">
+    <label class="field full">ใบงานที่อ้างอิง <select name="job_id" required>${options(jobOpts, p?.job_id || jobId, '— เลือกใบงาน —')}</select></label>
+    <label class="field">ประเภทรายการ <select name="trans_type">${options(S.d.options.trans_type, p?.trans_type || ST.TRANS.IN)}</select></label>
+    <label class="field">จำนวนเงินที่โอนจริง (บาท) <input type="number" name="amount" min="1" step="0.01" required value="${esc(p ? num(p.amount) : '')}"></label>
+    <div class="full small" id="payHint"></div>
+    <label class="field">วันและเวลาที่โอน (ตามสลิป) <input type="datetime-local" name="trans_datetime" value="${esc(p?.trans_datetime || nowLocal())}"></label>
+    <label class="field">สถานะรายการ <select name="payout_status">${options(S.d.options.payout_status, isPayout ? ST.PAYOUT.TRANSFERRED : (p?.payout_status || ST.PAYOUT.OK))}</select></label>
+    <label class="field full">รูปสลิปหลักฐานการโอน ${p?.slip_image_url ? `(มีแล้ว: <a href="${esc(p.slip_image_url)}" target="_blank">ดูสลิปเดิม</a>)` : ''}
+      <input type="file" name="slip" accept="image/*,application/pdf"><span class="hint">ไฟล์จะถูกเก็บใน Google Drive ของศูนย์</span></label>
+  </div>
+  <div class="row modal-actions"><span class="spacer"></span>
+    <button type="button" class="btn" data-close>ปิด</button><button type="submit" class="btn btn-primary">บันทึก</button></div></form>`);
+  const f = $('#payForm');
+  let autoAmount = !p;
+  const hint = () => {
+    const j = JOB(f.job_id.value);
+    if (!j) { $('#payHint').innerHTML = ''; return; }
+    const isIn = f.trans_type.value === ST.TRANS.IN;
+    const due = isIn ? Math.max(num(j.total_client_amount) - num(j._paid), 0) : num(j.total_worker_wage);
+    if (autoAmount) f.amount.value = due || '';
+    $('#payHint').innerHTML = isIn
+      ? `<div class="alert ${due ? 'alert-warn' : 'alert-ok'}">ยอดเรียกเก็บ ${baht(j.total_client_amount)} · รับแล้ว ${baht(j._paid)} · <b>ค้างชำระ ${baht(due)}</b> — เมื่อรับครบ ระบบจะเปลี่ยนใบงานเป็น "ชำระแล้ว" อัตโนมัติ</div>`
+      : `<div class="alert alert-info">ค่าจ้างสุทธิของใบงานนี้ ${baht(j.total_worker_wage)} (${esc(wName(W(j.worker_id)) || 'ยังไม่จัดคน')})</div>`;
+    if (!p) f.payout_status.value = isIn ? ST.PAYOUT.OK : ST.PAYOUT.WAITING;
+  };
+  f.job_id.onchange = f.trans_type.onchange = hint;
+  f.amount.oninput = () => { autoAmount = false; };
+  hint();
+  f.onsubmit = e => {
+    e.preventDefault();
+    const d = formData(f);
+    delete d.slip;
+    if (p) d.trans_id = p.trans_id;
+    submitWith(f, async () => {
+      const file = f.slip.files[0];
+      if (file) {
+        if (file.size > 6 * 1024 * 1024) throw new Error('ไฟล์สลิปใหญ่เกิน 6MB');
+        const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+        d.slip = { name: file.name, mime: file.type, data: String(dataUrl).split(',')[1] };
+      }
+      const r = await api('savePayment', S.pin, d);
+      closeModal();
+      toast(`บันทึก ${r.payment.trans_id} แล้ว` + (r.messages.length ? '\n' + r.messages.join('\n') : ''));
+      await load();
+    });
+  };
+}
+
+/* ============================================================
+ * Leaves
+ * ============================================================ */
+function renderLeaves() {
+  const rows = S.d.leaves.filter(l => !S.leaveFilter || l.status === S.leaveFilter || (S.leaveFilter === 'late' && l._late))
+    .sort((a, b) => String(b.leave_id).localeCompare(String(a.leave_id), undefined, { numeric: true }));
+  return `
+  <div class="page-head"><h2>ใบลา (ต้องแจ้งล่วงหน้า ${S.d.config.minLeaveDays} วัน)</h2><span class="spacer"></span>
+    <div class="toolbar">
+      <select data-bind="leaveFilter">${options([['', 'ทุกใบลา'], ...S.d.options.leave_status.map(s => [s, s]), ['late', '🔴 แจ้งกะทันหัน']], S.leaveFilter)}</select>
+      <button class="btn btn-primary" data-act="newLeave">+ บันทึกใบลาแทนผู้รับจ้าง</button></div></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>รหัส</th><th>ผู้รับจ้าง</th><th>ยื่นเมื่อ</th><th>ช่วงวันหยุด</th><th style="text-align:right">แจ้งล่วงหน้า</th><th>ตรวจกฎ 7 วัน</th><th>เหตุผล</th><th>คนแทน</th><th>สถานะ</th><th></th></tr></thead>
+    <tbody>${rows.map(l => `<tr class="${l._late ? 'row-danger' : ''}">
+      <td><b>${esc(l.leave_id)}</b></td>
+      <td>${esc(wName(W(l.worker_id)) || '')}<div class="sub">${esc(l.worker_id)}</div></td>
+      <td>${fmt(l.request_date, false)}</td>
+      <td>${fmt(l.leave_start_date, false)}<div class="sub">ถึง ${fmt(l.leave_end_date, false)}</div></td>
+      <td class="num">${esc(l.notice_days)} วัน</td>
+      <td>${l._late ? `<span class="tag-red">${esc(S.d.config.lateLeaveTag)}</span>` : '<span class="badge b-ok">ผ่านเกณฑ์ 1 สัปดาห์</span>'}</td>
+      <td class="small">${esc(l.leave_reason || '')}</td>
+      <td>${l.substitute_worker_id ? esc(wName(W(l.substitute_worker_id)) || l.substitute_worker_id) : '<span class="muted">–</span>'}</td>
+      <td>${badge('leave', l.status)}</td>
+      <td class="actions"><button class="btn btn-sm ${l.status === 'รอตรวจสอบ' ? 'btn-primary' : ''}" data-act="reviewLeave" data-id="${esc(l.leave_id)}">${l.status === 'รอตรวจสอบ' ? 'พิจารณา' : 'ดู'}</button></td>
+    </tr>`).join('') || '<tr><td colspan="10" class="empty">ยังไม่มีใบลา</td></tr>'}</tbody></table></div>`;
+}
+
+function leavePreview(f) {
+  const req = f.request_date ? f.request_date.value : today();
+  const s = f.leave_start_date.value;
+  const box = $('#leavePreview');
+  if (!s || !req) { box.innerHTML = ''; return; }
+  const n = dayDiff(req, s);
+  box.innerHTML = n < S.d.config.minLeaveDays
+    ? `<div class="alert alert-danger">🔴 ${esc(S.d.config.lateLeaveTag)} — แจ้งล่วงหน้าเพียง ${n} วัน (ต้อง ${S.d.config.minLeaveDays} วันขึ้นไป)</div>`
+    : `<div class="alert alert-ok">✅ ผ่านเกณฑ์แจ้งล่วงหน้า 1 สัปดาห์ (${n} วัน)</div>`;
+}
+
+function openLeaveForm() {
+  const wOpts = S.d.workers.filter(w => w.status !== 'พ้นสภาพ').map(w => [w.worker_id, `${w.worker_id} · ${wName(w)}`]);
+  openModal('บันทึกใบลาแทนผู้รับจ้าง', `
+  <form id="leaveForm"><div class="grid">
+    <label class="field full">ผู้รับจ้างที่ขอลา <select name="worker_id" required>${options(wOpts, '', '— เลือก —')}</select></label>
+    <label class="field">วันที่ยื่นเรื่องขอลา <input type="date" name="request_date" required value="${today()}"></label>
+    <span></span>
+    <label class="field">วันที่เริ่มหยุดงาน <input type="date" name="leave_start_date" required></label>
+    <label class="field">วันสุดท้ายที่หยุดงาน <input type="date" name="leave_end_date" required></label>
+    <div class="full" id="leavePreview"></div>
+    <label class="field full">เหตุผลการลาหยุด <textarea name="leave_reason" required></textarea></label>
+  </div>
+  <div class="row modal-actions"><span class="spacer"></span>
+    <button type="button" class="btn" data-close>ปิด</button><button type="submit" class="btn btn-primary">บันทึกใบลา</button></div></form>`);
+  const f = $('#leaveForm');
+  f.request_date.onchange = f.leave_start_date.onchange = () => {
+    if (!f.leave_end_date.value) f.leave_end_date.value = f.leave_start_date.value;
+    leavePreview(f);
+  };
+  f.onsubmit = e => {
+    e.preventDefault();
+    submitWith(f, async () => {
+      const r = await api('saveLeave', S.pin, formData(f));
+      closeModal();
+      toast(`บันทึกใบลา ${r.leave_id} แล้ว` + (r.late ? `\n🔴 ${r.tag}` : '') + (r.affected.length ? `\nกระทบใบงาน: ${r.affected.join(', ')}` : ''), r.late);
+      await load();
+    });
+  };
+}
+
+async function openLeaveReview(id) {
+  openModal(`พิจารณาใบลา ${id}`, '<div class="row"><span class="spinner"></span> กำลังตรวจสอบใบงานที่กระทบและคนที่ส่งแทนได้…</div>');
+  let r;
+  try { r = await api('getLeaveDetail', S.pin, id); } catch (e) { closeModal(); toast(errMsg(e), true); return; }
+  const l = r.leave, w = W(l.worker_id);
+  const okCount = r.candidates.filter(c => c.ok).length;
+  const candOpts = r.candidates.sort((a, b) => b.ok - a.ok).map(c =>
+    `<option value="${esc(c.worker_id)}" ${c.ok ? '' : 'disabled'} ${c.worker_id === l.substitute_worker_id ? 'selected' : ''}>${esc(c.label)}${c.ok ? ' ✅' : ' — ' + esc(c.reasons[0])}</option>`).join('');
+  openModal(`พิจารณาใบลา ${l.leave_id}`, `
+  <div class="stack">
+    <div><b>${esc(wName(w) || l.worker_id)}</b> (${esc(l.worker_id)}) ${badge('leave', l.status)}
+      <div class="small muted">หยุด ${fmt(l.leave_start_date, false)} – ${fmt(l.leave_end_date, false)} · ยื่นเมื่อ ${fmt(l.request_date, false)} · แจ้งล่วงหน้า ${esc(l.notice_days)} วัน</div>
+      <div class="small">เหตุผล: ${esc(l.leave_reason)}</div></div>
+    ${l._late ? `<div class="alert alert-danger">🔴 ${esc(S.d.config.lateLeaveTag)}</div>` : '<div class="alert alert-ok">✅ ผ่านเกณฑ์แจ้งล่วงหน้า 1 สัปดาห์</div>'}
+    <div><b>ใบงานที่กระทบ (${r.affected.length})</b>
+      ${r.affected.length ? r.affected.map(j => `<div class="list-item"><div class="grow">${esc(j.job_id)} · ${esc((C(j.client_id) || {}).patient_name || '')}
+        <div class="small muted">${fmt(j.start_datetime)} – ${fmt(j.end_datetime)} · ${esc((SV(j.service_code) || {}).service_name || '')}</div></div>${badge('payment', j.payment_status)}</div>`).join('')
+        : '<div class="empty">ไม่มีใบงานในช่วงวันลา</div>'}</div>
+    <form id="decideForm" class="stack">
+      <label class="field">ผู้รับจ้างที่ส่งไปแทน (ส่งได้ ${okCount} คน — ตรวจทักษะ/รถ/สถานะ/เวลาชนแล้ว)
+        <select name="substitute">${'<option value="">— ไม่ระบุคนแทน —</option>' + candOpts}</select></label>
+      ${r.affected.length ? '<label class="check"><input type="checkbox" name="reassign" checked> ย้ายใบงานที่กระทบทั้งหมดไปให้คนแทนอัตโนมัติ (และแจ้งเตือนทาง LINE)</label>' : ''}
+      <div class="row modal-actions">
+        <button type="button" class="btn btn-danger" id="rejectBtn">ไม่อนุมัติ</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn" data-close>ปิด</button>
+        <button type="submit" class="btn btn-primary">อนุมัติ</button></div>
+    </form>
+  </div>`);
+  const f = $('#decideForm');
+  const decide = decision => submitWith(f, async () => {
+    const res = await api('decideLeave', S.pin, l.leave_id, decision, f.substitute.value, !!(f.reassign && f.reassign.checked));
+    closeModal();
+    toast(`ใบลา ${l.leave_id}: ${res.status}` + (res.moved.length ? `\nย้ายใบงาน ${res.moved.join(', ')} ให้คนแทนแล้ว` : ''));
+    await load();
+  });
+  f.onsubmit = e => { e.preventDefault(); decide('approve'); };
+  $('#rejectBtn').onclick = () => decide('reject');
+}
+
+/* ============================================================
+ * Links
+ * ============================================================ */
+function renderLinks() {
+  const url = S.d.config.appUrl;
+  const linkRow = (id, label, href, note) => `
+    <div class="stack"><div><b>${label}</b><div class="small muted">${note}</div></div>
+    <div class="link-row"><input id="${id}" readonly value="${esc(href)}"><button class="btn btn-sm" data-act="copy" data-id="${id}">คัดลอก</button>
+    <a class="btn btn-sm" href="${esc(href)}" target="_blank">เปิด</a></div></div>`;
+  return `
+  <div class="page-head"><h2>ลิงก์ระบบและการแจ้งเตือน LINE</h2></div>
+  <div class="two-col">
+    <div class="card stack"><h3>🔗 ลิงก์สำหรับแชร์</h3>
+      ${url ? linkRow('lnkBook', 'ฟอร์มลูกค้าจองบริการ', url + '?page=book', 'ส่งให้ลูกค้า/ญาติ — จองแล้วศูนย์ได้รับแจ้งเตือนทาง LINE ทันที')
+        + linkRow('lnkLeave', 'ฟอร์มผู้รับจ้างยื่นใบลา', url + '?page=leave', 'ผู้รับจ้างยืนยันตัวตนด้วยรหัส + เบอร์โทร 4 ตัวท้าย')
+        + linkRow('lnkAdmin', 'หน้าผู้จัดการศูนย์ (หน้านี้)', url, 'ใช้รหัสผู้จัดการในการเข้า — ห้ามแชร์รหัส')
+        : '<div class="alert alert-warn">ยังไม่ได้ Deploy เป็น Web app — ดูขั้นตอนใน README</div>'}
+    </div>
+    <div class="card stack"><h3>💬 LINE แจ้งเตือน ${S.d.config.lineReady ? '<span class="badge b-ok">พร้อมใช้งาน</span>' : '<span class="badge b-danger">ยังไม่ตั้งค่า</span>'}</h3>
+      <div class="small">ระบบส่งข้อความอัตโนมัติเมื่อ:</div>
+      <ul class="small" style="margin:0;padding-left:20px">
+        <li>ลูกค้าจองงานใหม่ / ผู้จัดการสร้างใบงาน → แจ้งศูนย์</li>
+        <li>ผู้รับจ้างยื่นใบลา → แจ้งศูนย์ (ติดแท็กแดงถ้าแจ้งน้อยกว่า ${S.d.config.minLeaveDays} วัน)</li>
+        <li>ก่อนเริ่มงาน 24 ชม. → แจ้งผู้รับจ้าง พร้อมที่อยู่และเบอร์ญาติ</li>
+        <li>งานพรุ่งนี้ที่ยัง "รอชำระ" หรือยังไม่จัดคน → เตือนศูนย์</li>
+      </ul>
+      <div class="small"><b>ผู้รับจ้างผูก LINE:</b> เพิ่มเพื่อน LINE OA ของศูนย์ แล้วพิมพ์<br>
+        <code>ลงทะเบียน WK-001 1234</code> (รหัสของตน + เบอร์โทร 4 ตัวท้าย)</div>
+      <div class="small"><b>หา ID กลุ่มศูนย์:</b> เชิญบอทเข้ากลุ่ม LINE ของทีมงาน แล้วพิมพ์ <code>id</code></div>
+    </div>
+  </div>`;
+}
+</script>
+</body>
+</html>
