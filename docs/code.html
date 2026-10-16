@@ -54,7 +54,8 @@
 
   <main>
     <div class="note">⚠️ เปิด Apps Script จาก <b>Google Sheet ของศูนย์ → Extensions → Apps Script</b> เท่านั้น
-      และลบไฟล์เก่าที่เคยวางไว้ (<code>Config</code>, <code>Db</code>, <code>Services</code>, <code>Line</code>, <code>Setup</code>, <code>WebApp</code>) ทิ้งก่อน เหลือไว้แค่ไฟล์ตามรายการด้านล่าง</div>
+      — ไฟล์ <b>.gs ต้องมีแค่ไฟล์เดียว</b> ที่วางโค้ด Code.gs ทั้งก้อน ลบไฟล์ .gs อื่นทิ้ง (เช่น <code>Config</code>, <code>Db</code>, <code>Services</code>, <code>Line</code>, <code>Setup</code>, <code>WebApp</code>)
+      ส่วนไฟล์ HTML ที่เคยสร้างไว้ จะเก็บหรือลบก็ได้ ระบบใช้หน้าเว็บที่ฝังใน Code.gs</div>
 
     <div id="steps"></div>
 
@@ -72,11 +73,8 @@
 
 <script>
 const FILES = [
-  { name: 'Code', ext: '.gs', kind: 'Script', how: 'คลิกไฟล์ Code ที่มีอยู่แล้ว → Ctrl+A → Ctrl+V (วางทับทั้งหมด)' },
-  { name: 'Index', ext: '.html', kind: 'HTML', how: 'กด + → HTML → ตั้งชื่อ Index → Ctrl+A → Ctrl+V' },
-  { name: 'Public', ext: '.html', kind: 'HTML', how: 'กด + → HTML → ตั้งชื่อ Public → Ctrl+A → Ctrl+V' },
-  { name: 'Styles', ext: '.html', kind: 'HTML', how: 'กด + → HTML → ตั้งชื่อ Styles → Ctrl+A → Ctrl+V' },
-  { name: 'appsscript', ext: '.json', kind: 'Manifest', how: '⚙️ Project Settings → ติ๊ก Show "appsscript.json" → กลับหน้า Editor → เปิด appsscript.json → Ctrl+A → Ctrl+V' },
+  { name: 'Code', ext: '.gs', kind: 'Script — ไฟล์เดียวจบ (รวมหน้าเว็บ HTML ไว้แล้ว)', how: 'คลิกไฟล์ .gs ที่มีอยู่ (เช่น Code หรือ care) → Ctrl+A → Ctrl+V วางทับทั้งหมด · ไฟล์ .gs ต้องเหลือไฟล์เดียว · ไม่ต้องสร้างไฟล์ HTML' },
+  { name: 'appsscript', ext: '.json', kind: 'Manifest (ไม่บังคับ)', how: '⚙️ Project Settings → ติ๊ก Show "appsscript.json" → กลับหน้า Editor → เปิด appsscript.json → Ctrl+A → Ctrl+V' },
 ];
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const cache = {};

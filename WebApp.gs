@@ -7,7 +7,7 @@
 function doGet(e) {
   const page = (e && e.parameter && e.parameter.page) || '';
   const isPublic = page === 'book' || page === 'leave';
-  const tpl = HtmlService.createTemplateFromFile(isPublic ? 'Public' : 'Index');
+  const tpl = HtmlService.createTemplate(htmlSource_(isPublic ? 'Public' : 'Index'));
   tpl.mode = page;
   tpl.centerName = CONFIG.CENTER_NAME;
   tpl.slogan = CONFIG.SLOGAN;
@@ -17,5 +17,14 @@ function doGet(e) {
 }
 
 function include_(name) {
+  return htmlSource_(name);
+}
+
+/**
+ * ไฟล์รวม apps-script/Code.gs ฝัง HTML ไว้ใน HTML_FILES_ (วางไฟล์เดียวก็ใช้ได้)
+ * ถ้าไม่มี จะอ่านจากไฟล์ HTML ในโปรเจกต์ตามปกติ
+ */
+function htmlSource_(name) {
+  if (typeof HTML_FILES_ !== 'undefined' && HTML_FILES_[name]) return HTML_FILES_[name];
   return HtmlService.createHtmlOutputFromFile(name).getContent();
 }
