@@ -59,7 +59,7 @@ function setupSheets() {
   const missingProps = ['ADMIN_PIN', 'LINE_CHANNEL_ACCESS_TOKEN', 'LINE_CENTER_TARGET_ID'].filter(k => !prop_(k));
   if (missingProps.length) report.push('⚠️ ยังไม่ได้ตั้ง Script Properties: ' + missingProps.join(', '));
 
-  SpreadsheetApp.getUi().alert('ตรวจสอบโครงสร้างเรียบร้อย\n\n' + (report.length ? report.join('\n') : 'โครงสร้างครบถ้วนแล้ว ✅'));
+  notify_('ตรวจสอบโครงสร้างเรียบร้อย\n\n' + (report.length ? report.join('\n') : 'โครงสร้างครบถ้วนแล้ว ✅'));
 }
 
 function lastHeaderCol_(sh) {
@@ -200,12 +200,12 @@ function installTriggers() {
     .filter(t => t.getHandlerFunction() === 'sendUpcomingReminders')
     .forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('sendUpcomingReminders').timeBased().everyHours(1).create();
-  SpreadsheetApp.getUi().alert('✅ เปิดการแจ้งเตือนอัตโนมัติแล้ว\nระบบจะตรวจทุกชั่วโมง และส่ง LINE เตือนคนทำงานก่อนเริ่มงาน 24 ชม.');
+  notify_('✅ เปิดการแจ้งเตือนอัตโนมัติแล้ว\nระบบจะตรวจทุกชั่วโมง และส่ง LINE เตือนคนทำงานก่อนเริ่มงาน 24 ชม.');
 }
 
 function testLine() {
   const ok = notifyCenter_('✅ ทดสอบการแจ้งเตือนจาก ' + CONFIG.CENTER_NAME + '\n' + CONFIG.SLOGAN);
-  SpreadsheetApp.getUi().alert(ok
+  notify_(ok
     ? 'ส่ง LINE สำเร็จ ✅'
     : 'ส่งไม่สำเร็จ ❌\nตรวจสอบ Script Properties: LINE_CHANNEL_ACCESS_TOKEN และ LINE_CENTER_TARGET_ID\n(ดูรายละเอียดใน Executions log)');
 }
@@ -213,7 +213,7 @@ function testLine() {
 function showWebAppLinks() {
   const url = ScriptApp.getService().getUrl();
   if (!url) {
-    SpreadsheetApp.getUi().alert('ยังไม่ได้ Deploy เว็บแอป\nไปที่ Extensions > Apps Script > Deploy > New deployment > Web app');
+    notify_('ยังไม่ได้ Deploy เว็บแอป\nไปที่ Extensions > Apps Script > Deploy > New deployment > Web app');
     return;
   }
   const link = (label, href) => '<p><b>' + label + '</b><br><a href="' + href + '" target="_blank">' + href + '</a></p>';
@@ -224,4 +224,15 @@ function showWebAppLinks() {
     link('ฟอร์มผู้รับจ้างยื่นลา', url + '?page=leave') +
     '</div>').setWidth(520).setHeight(260);
   SpreadsheetApp.getUi().showModalDialog(html, 'ลิงก์ระบบ ' + CONFIG.CENTER_NAME);
+}
+
+/** แสดงผลเป็นกล่องข้อความในชีต ถ้ารันจาก Apps Script editor ที่ไม่ได้ผูกกับชีต จะแสดงใน Execution log แทน */
+function notify_(msg) {
+  console.log(msg);
+  try {
+    SpreadsheetApp.getUi().alert(msg);
+  } catch (e) {
+    // ไม่มีหน้าต่างชีตให้แสดง — ข้อความอยู่ใน Execution log แล้ว
+  }
+  return msg;
 }
