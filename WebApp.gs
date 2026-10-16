@@ -1,11 +1,19 @@
 /**
  * เว็บแอป
- *   /exec              หน้าผู้จัดการศูนย์ (ต้องใส่ ADMIN_PIN)
- *   /exec?page=book    ฟอร์มลูกค้าจองบริการ
- *   /exec?page=leave   ฟอร์มผู้รับจ้างยื่นลา
+ *   /exec                  หน้าผู้จัดการศูนย์ (ต้องใส่ ADMIN_PIN)
+ *   /exec?page=จองบริการ   ฟอร์มลูกค้าจองบริการ  (ลิงก์เดิม ?page=book ยังใช้ได้)
+ *   /exec?page=ยื่นใบลา    ฟอร์มผู้รับจ้างยื่นลา   (ลิงก์เดิม ?page=leave ยังใช้ได้)
  */
+const PAGE_NAMES = { book: 'จองบริการ', leave: 'ยื่นใบลา' };
+
+function pageKey_(raw) {
+  const p = String(raw || '').trim();
+  if (PAGE_NAMES[p]) return p;
+  return Object.keys(PAGE_NAMES).find(k => PAGE_NAMES[k] === p) || '';
+}
+
 function doGet(e) {
-  const page = (e && e.parameter && e.parameter.page) || '';
+  const page = pageKey_(e && e.parameter && e.parameter.page);
   const isPublic = page === 'book' || page === 'leave';
   const tpl = HtmlService.createTemplate(htmlSource_(isPublic ? 'Public' : 'Index'));
   tpl.mode = page;

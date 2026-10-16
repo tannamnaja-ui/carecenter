@@ -225,8 +225,8 @@ function showWebAppLinks() {
   const html = HtmlService.createHtmlOutput(
     '<div style="font-family:sans-serif;font-size:13px">' +
     link('หน้าผู้จัดการศูนย์', url) +
-    link('ฟอร์มลูกค้าจองบริการ', url + '?page=book') +
-    link('ฟอร์มผู้รับจ้างยื่นลา', url + '?page=leave') +
+    link('ฟอร์มลูกค้าจองบริการ', url + '?page=จองบริการ') +
+    link('ฟอร์มผู้รับจ้างยื่นลา', url + '?page=ยื่นใบลา') +
     '</div>').setWidth(520).setHeight(260);
   SpreadsheetApp.getUi().showModalDialog(html, 'ลิงก์ระบบ ' + CONFIG.CENTER_NAME);
 }
