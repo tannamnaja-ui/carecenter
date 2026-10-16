@@ -100,7 +100,7 @@ function computeDashboard_(ctx, payments) {
 }
 
 /* =========================================================
- * บริการ / ราคา (Auto-fill จาก Service_Catalog เท่านั้น)
+ * บริการ / ราคา (Auto-fill จากแผ่น "บริการของศูนย์ทั้งหมด" เท่านั้น)
  * ========================================================= */
 
 function serviceAmounts_(svc) {
@@ -378,7 +378,7 @@ function saveJob(pin, p) {
       throw new Error('⛔ ห้ามปล่อยคนลงพื้นที่: ใบงานนี้ยัง "รอชำระ" กรุณาบันทึกรับเงินจากลูกค้าก่อน');
     }
 
-    // ราคาดึงจาก Service_Catalog เสมอ ไม่รับตัวเลขจากหน้าฟอร์ม
+    // ราคาดึงจากแผ่น "บริการของศูนย์ทั้งหมด" เสมอ ไม่รับตัวเลขจากหน้าฟอร์ม
     // ใบงานเดิมที่ไม่ได้เปลี่ยนบริการ คงราคาตอนเปิดใบงานไว้ (กันราคาเปลี่ยนย้อนหลัง)
     const keepOldPrice = existing && existing.service_code === svc.service_code && toNum_(existing.total_client_amount) > 0;
     const amounts = keepOldPrice ? {

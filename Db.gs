@@ -14,9 +14,17 @@ function ss() {
 }
 
 function getSheet_(name) {
-  const sh = ss().getSheetByName(name);
+  const sh = findSheet_(ss(), name);
   if (!sh) throw new Error('ไม่พบแผ่นงาน "' + name + '" กรุณารันเมนู "ติดตั้ง/ตรวจสอบโครงสร้างแผ่นงาน" ก่อน');
   return sh;
+}
+
+/** หาแผ่นงานตามชื่อปัจจุบัน ถ้าไม่เจอจะลองชื่อเดิมใน SHEET_ALIASES */
+function findSheet_(book, name) {
+  const sh = book.getSheetByName(name);
+  if (sh) return sh;
+  const old = (SHEET_ALIASES[name] || []).map(n => book.getSheetByName(n)).filter(Boolean)[0];
+  return old || null;
 }
 
 function getHeaders_(sh) {

@@ -37,7 +37,12 @@ function setupSheets() {
 
   Object.keys(SCHEMA).forEach(name => {
     const schema = SCHEMA[name];
-    let sh = book.getSheetByName(name);
+    let sh = findSheet_(book, name);
+    if (sh && sh.getName() !== name) {
+      // เปลี่ยนชื่อแผ่นเดิม (ข้อมูลอยู่ครบ และสูตรที่อ้างถึงจะเปลี่ยนชื่อตามอัตโนมัติ)
+      report.push('✏️ เปลี่ยนชื่อแผ่นงาน "' + sh.getName() + '" เป็น "' + name + '"');
+      sh.setName(name);
+    }
     if (!sh) {
       sh = book.insertSheet(name);
       buildNewSheet_(sh, schema);

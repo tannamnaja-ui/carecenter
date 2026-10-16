@@ -29,11 +29,16 @@ const CONFIG = {
 const SHEET = {
   WORKERS: 'Workers',
   CLIENTS: 'Clients',
-  SERVICES: 'Service_Catalog',
+  SERVICES: 'บริการของศูนย์ทั้งหมด',
   JOBS: 'Job_Orders',
   PAYMENTS: 'Payments',
   LEAVES: 'Leave_Requests',
   DASHBOARD: 'Dashboard_Summary',
+};
+
+/** ชื่อแผ่นงานเดิมที่ยังรองรับ — setupSheets จะเปลี่ยนชื่อเป็นชื่อใหม่ให้ (ข้อมูลและสูตรอ้างอิงตามไปด้วย) */
+const SHEET_ALIASES = {
+  [SHEET.SERVICES]: ['Service_Catalog', 'บริการของศุนย์ทั้งหมด'],
 };
 
 const STATUS = {
@@ -125,7 +130,7 @@ const SCHEMA = {
     fields: [
       ['job_id', 'รหัสใบงาน (เช่น JOB-001)'],
       ['client_id', 'รหัสผู้ว่าจ้าง (จาก Clients)'],
-      ['service_code', 'รหัสบริการ (จาก Service_Catalog)'],
+      ['service_code', 'รหัสบริการ (จากแผ่น บริการของศูนย์ทั้งหมด)'],
       ['worker_id', 'รหัสผู้รับจ้างที่ไปทำ (จาก Workers)'],
       ['start_datetime', 'วันและเวลาเริ่มงาน'],
       ['end_datetime', 'วันและเวลาเสร็จงาน'],

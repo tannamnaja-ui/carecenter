@@ -37,11 +37,16 @@ const CONFIG = {
 const SHEET = {
   WORKERS: 'Workers',
   CLIENTS: 'Clients',
-  SERVICES: 'Service_Catalog',
+  SERVICES: 'บริการของศูนย์ทั้งหมด',
   JOBS: 'Job_Orders',
   PAYMENTS: 'Payments',
   LEAVES: 'Leave_Requests',
   DASHBOARD: 'Dashboard_Summary',
+};
+
+/** ชื่อแผ่นงานเดิมที่ยังรองรับ — setupSheets จะเปลี่ยนชื่อเป็นชื่อใหม่ให้ (ข้อมูลและสูตรอ้างอิงตามไปด้วย) */
+const SHEET_ALIASES = {
+  [SHEET.SERVICES]: ['Service_Catalog', 'บริการของศุนย์ทั้งหมด'],
 };
 
 const STATUS = {
@@ -133,7 +138,7 @@ const SCHEMA = {
     fields: [
       ['job_id', 'รหัสใบงาน (เช่น JOB-001)'],
       ['client_id', 'รหัสผู้ว่าจ้าง (จาก Clients)'],
-      ['service_code', 'รหัสบริการ (จาก Service_Catalog)'],
+      ['service_code', 'รหัสบริการ (จากแผ่น บริการของศูนย์ทั้งหมด)'],
       ['worker_id', 'รหัสผู้รับจ้างที่ไปทำ (จาก Workers)'],
       ['start_datetime', 'วันและเวลาเริ่มงาน'],
       ['end_datetime', 'วันและเวลาเสร็จงาน'],
@@ -200,9 +205,17 @@ function ss() {
 }
 
 function getSheet_(name) {
-  const sh = ss().getSheetByName(name);
+  const sh = findSheet_(ss(), name);
   if (!sh) throw new Error('ไม่พบแผ่นงาน "' + name + '" กรุณารันเมนู "ติดตั้ง/ตรวจสอบโครงสร้างแผ่นงาน" ก่อน');
   return sh;
+}
+
+/** หาแผ่นงานตามชื่อปัจจุบัน ถ้าไม่เจอจะลองชื่อเดิมใน SHEET_ALIASES */
+function findSheet_(book, name) {
+  const sh = book.getSheetByName(name);
+  if (sh) return sh;
+  const old = (SHEET_ALIASES[name] || []).map(n => book.getSheetByName(n)).filter(Boolean)[0];
+  return old || null;
 }
 
 function getHeaders_(sh) {
@@ -509,7 +522,7 @@ function computeDashboard_(ctx, payments) {
 }
 
 /* =========================================================
- * บริการ / ราคา (Auto-fill จาก Service_Catalog เท่านั้น)
+ * บริการ / ราคา (Auto-fill จากแผ่น "บริการของศูนย์ทั้งหมด" เท่านั้น)
  * ========================================================= */
 
 function serviceAmounts_(svc) {
@@ -787,7 +800,7 @@ function saveJob(pin, p) {
       throw new Error('⛔ ห้ามปล่อยคนลงพื้นที่: ใบงานนี้ยัง "รอชำระ" กรุณาบันทึกรับเงินจากลูกค้าก่อน');
     }
 
-    // ราคาดึงจาก Service_Catalog เสมอ ไม่รับตัวเลขจากหน้าฟอร์ม
+    // ราคาดึงจากแผ่น "บริการของศูนย์ทั้งหมด" เสมอ ไม่รับตัวเลขจากหน้าฟอร์ม
     // ใบงานเดิมที่ไม่ได้เปลี่ยนบริการ คงราคาตอนเปิดใบงานไว้ (กันราคาเปลี่ยนย้อนหลัง)
     const keepOldPrice = existing && existing.service_code === svc.service_code && toNum_(existing.total_client_amount) > 0;
     const amounts = keepOldPrice ? {
@@ -1393,7 +1406,12 @@ function setupSheets() {
 
   Object.keys(SCHEMA).forEach(name => {
     const schema = SCHEMA[name];
-    let sh = book.getSheetByName(name);
+    let sh = findSheet_(book, name);
+    if (sh && sh.getName() !== name) {
+      // เปลี่ยนชื่อแผ่นเดิม (ข้อมูลอยู่ครบ และสูตรที่อ้างถึงจะเปลี่ยนชื่อตามอัตโนมัติ)
+      report.push('✏️ เปลี่ยนชื่อแผ่นงาน "' + sh.getName() + '" เป็น "' + name + '"');
+      sh.setName(name);
+    }
     if (!sh) {
       sh = book.insertSheet(name);
       buildNewSheet_(sh, schema);
