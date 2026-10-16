@@ -234,6 +234,8 @@ function withLock_(fn) {
     return fn();
   } finally {
     SpreadsheetApp.flush();
+    // ข้อมูลเปลี่ยน → ล้างข้อมูลหน้าเว็บจองบริการที่ cache ไว้ (วันว่าง/งานที่ให้บริการอยู่)
+    try { CacheService.getScriptCache().remove('public_site'); } catch (e) { /* ไม่เป็นไร */ }
     lock.releaseLock();
   }
 }

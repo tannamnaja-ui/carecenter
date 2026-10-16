@@ -54,6 +54,9 @@ function setupSheets() {
     applyValidation_(sh, name);
   });
 
+  resetCaches_();
+  if (seedAboutSheet_()) report.push('📝 ใส่ข้อความตั้งต้นในแผ่น "' + SHEET.ABOUT + '" แล้ว (แก้ไขได้ในชีต)');
+
   applyConditionalFormats_(book);
   if (!book.getSheetByName(SHEET.DASHBOARD)) {
     buildDashboardSheet_(book);
@@ -65,6 +68,16 @@ function setupSheets() {
   if (missingProps.length) report.push('⚠️ ยังไม่ได้ตั้ง Script Properties: ' + missingProps.join(', '));
 
   notify_('ตรวจสอบโครงสร้างเรียบร้อย\n\n' + (report.length ? report.join('\n') : 'โครงสร้างครบถ้วนแล้ว ✅'));
+}
+
+/** ใส่หนังสือรับประกัน/ความเป็นมาตั้งต้น เฉพาะตอนที่แผ่น "เกี่ยวกับศูนย์" ยังว่าง */
+function seedAboutSheet_() {
+  if (readTable_(SHEET.ABOUT).length) return false;
+  ABOUT_DEFAULTS.forEach(r => insertRow_(SHEET.ABOUT, { section_key: r[0], title: r[1], content: r[2] }));
+  const sh = getSheet_(SHEET.ABOUT);
+  sh.setColumnWidth(3, 640);
+  sh.getRange(CONFIG.DATA_START_ROW, 3, ABOUT_DEFAULTS.length, 1).setWrap(true).setVerticalAlignment('top');
+  return true;
 }
 
 function lastHeaderCol_(sh) {

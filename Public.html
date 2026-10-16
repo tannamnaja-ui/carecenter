@@ -5,7 +5,8 @@
   <meta charset="utf-8">
   <?!= include_('Styles'); ?>
   <style>
-    .hero { background: linear-gradient(135deg, #1f6273, #2e8a94); color: #fff; padding: 28px 16px 64px; }
+    .hero { background: linear-gradient(135deg, #1f6273, #2e8a94); color: #fff; padding: 24px 16px 22px; }
+    body.mode-leave .hero { padding-bottom: 64px; }
     .hero-inner { max-width: 640px; margin: 0 auto; text-align: center; }
     .hero .brand { flex-direction: column; justify-content: center; gap: 8px; }
     .hero .brand-version { color: #fff; background: rgba(255,255,255,.18); padding: 1px 10px; border-radius: 999px; margin-top: 4px; }
@@ -13,16 +14,71 @@
     .hero .brand-slogan { color: rgba(255,255,255,.85); white-space: normal; }
     .hero h1 { font-size: 22px; margin-top: 18px; }
     .hero p { margin: 4px 0 0; color: rgba(255,255,255,.85); font-size: 14px; }
-    .wrap { max-width: 640px; margin: -44px auto 40px; padding: 0 16px; }
+
+    /* ---------- เมนูด้านบน ---------- */
+    .site-nav { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: 0 2px 8px rgba(16,40,34,.05); }
+    .site-nav-inner { max-width: 1040px; margin: 0 auto; padding: 0 12px; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+    .site-nav-inner::-webkit-scrollbar { display: none; }
+    .site-nav button {
+      font: inherit; font-size: 14px; font-weight: 600; color: var(--muted);
+      background: none; border: none; border-bottom: 3px solid transparent;
+      padding: 12px 12px 10px; cursor: pointer; white-space: nowrap;
+    }
+    .site-nav button.active { color: var(--brand); border-bottom-color: var(--heart); }
+    /* จอมือถือเลื่อนซ้าย-ขวา · จอกว้างขึ้นบรรทัดใหม่และจัดกึ่งกลาง (ไม่ให้เมนูแรกถูกตัด) */
+    @media (min-width: 760px) { .site-nav-inner { flex-wrap: wrap; justify-content: center; overflow: visible; } }
+
+    .wrap { max-width: 1040px; margin: 18px auto 40px; padding: 0 16px; }
+    body.mode-leave .wrap { max-width: 640px; margin-top: -44px; }
+    .narrow { max-width: 640px; margin: 0 auto; }
+    .page-title { font-size: 20px; margin: 4px 0 4px; }
+    .page-sub { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
     .section-title { font-size: 15px; font-weight: 700; color: var(--brand-strong); margin: 4px 0 -2px; }
     .price-line { font-size: 14px; background: var(--brand-soft); color: var(--brand-strong); padding: 8px 12px; border-radius: 10px; }
     .done { text-align: center; padding: 28px 18px; }
     .done .big { font-size: 44px; }
     .done h2 { font-size: 20px; margin: 6px 0; }
+
+    .cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    .svc-card { display: flex; flex-direction: column; gap: 8px; border-top: 4px solid var(--brand); }
+    .svc-card h3 { font-size: 17px; }
+    .svc-price { font-size: 22px; font-weight: 700; color: var(--brand-strong); }
+    .svc-price small { font-size: 14px; font-weight: 600; color: var(--muted); }
+    .svc-card .grow { flex: 1; }
+    .about-card { border-left: 5px solid var(--heart); }
+    .about-card h2 { font-size: 19px; margin-bottom: 8px; color: var(--brand-strong); }
+    .about-card p { margin: 0 0 8px; }
+
+    .svc-group { margin-bottom: 22px; }
+    .svc-group h3 { font-size: 17px; margin-bottom: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .worker-card { display: flex; gap: 12px; align-items: flex-start; }
+    .avatar { flex: none; width: 46px; height: 46px; border-radius: 50%; background: var(--brand-soft); color: var(--brand-strong); display: grid; place-items: center; font-weight: 700; font-size: 18px; }
+    .worker-card .name { font-weight: 700; }
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; align-items: flex-start; align-content: flex-start; }
+
+    .avail-wrap { overflow-x: auto; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); }
+    table.avail { border-collapse: collapse; font-size: 14px; min-width: 100%; }
+    table.avail th, table.avail td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    table.avail th:first-child, table.avail td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); padding-left: 12px; min-width: 170px; white-space: normal; }
+    table.avail thead th { font-size: 12.5px; color: var(--muted); font-weight: 600; background: #fafbfb; }
+    table.avail thead th.weekend { color: var(--heart); }
+    .cnt { display: inline-block; min-width: 34px; padding: 3px 6px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font: inherit; font-weight: 700; }
+    .cnt.ok { background: var(--ok-bg); color: var(--ok); }
+    .cnt.low { background: var(--warn-bg); color: var(--warn); }
+    .cnt.none { background: var(--danger-bg); color: var(--danger); cursor: default; }
+    .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+
+    .stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 14px; }
+    .stat { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px 16px; border-top: 3px solid var(--brand); }
+    .stat .v { font-size: 26px; font-weight: 700; }
+    .stat .k { font-size: 13px; color: var(--muted); }
+    .ongo { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+    .ongo:first-child { border-top: none; }
+    .ongo .grow { flex: 1; min-width: 0; }
     footer { text-align: center; font-size: 12.5px; color: var(--muted); padding: 0 16px 28px; }
   </style>
 </head>
-<body>
+<body class="mode-<?= mode ?>">
   <div class="hero"><div class="hero-inner">
     <div class="brand">
       <img class="brand-logo" src="https://tannamnaja-ui.github.io/carecenter/logo.jpg" alt="โลโก้ศูนย์ดวงใจกตัญญู">
@@ -32,17 +88,18 @@
         <div class="brand-slogan"><?= slogan ?></div>
       </div>
     </div>
-    <? if (mode === 'book') { ?>
-      <h1>จองบริการดูแลผู้ป่วย / ผู้สูงอายุ</h1>
-      <p>กรอกข้อมูลด้านล่าง เจ้าหน้าที่ศูนย์จะติดต่อกลับเพื่อยืนยันและแจ้งช่องทางชำระเงิน</p>
-    <? } else { ?>
+    <? if (mode !== 'book') { ?>
       <h1>ยื่นใบลาหยุดงาน (สำหรับผู้รับจ้าง)</h1>
       <p>ตามสัญญา ต้องแจ้งลาล่วงหน้าอย่างน้อย 7 วัน เพื่อให้ศูนย์จัดคนแทนได้ทัน</p>
     <? } ?>
   </div></div>
 
+  <? if (mode === 'book') { ?>
+  <nav class="site-nav"><div class="site-nav-inner" id="nav"></div></nav>
+  <? } ?>
+
   <div class="wrap">
-    <div class="card" id="card"><div class="row"><span class="spinner"></span> กำลังโหลด…</div></div>
+    <div id="panel"><div class="card narrow"><div class="row"><span class="spinner"></span> กำลังโหลด…</div></div></div>
   </div>
   <footer><?= centerName ?> · <?= slogan ?></footer>
   <div id="toast" hidden></div>
@@ -59,8 +116,16 @@ function nowLocal(addHours = 0) {
   return d.toISOString().slice(0, 16);
 }
 const today = () => nowLocal().slice(0, 10);
-const dayDiff = (a, b) => { const p = s => { const m = s.split('-'); return Date.UTC(+m[0], +m[1] - 1, +m[2]); }; return Math.round((p(b) - p(a)) / 864e5); };
-const fmtD = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${+m[1] + 543}` : s; };
+const utc = s => { const m = s.split('-'); return Date.UTC(+m[0], +m[1] - 1, +m[2]); };
+const dayDiff = (a, b) => Math.round((utc(b) - utc(a)) / 864e5);
+const WEEKDAY = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
+const MONTH = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+/** "2026-10-20T08:00" → "20 ต.ค. 69 08:00" */
+function fmt(s, withTime = true) {
+  const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/);
+  if (!m) return '-';
+  return `${+m[3]} ${MONTH[+m[2] - 1]} ${String(+m[1] + 543).slice(2)}` + (withTime && m[4] ? ` ${m[4]}:${m[5]} น.` : '');
+}
 let toastTimer;
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.className = 'error'; t.hidden = false;
@@ -72,13 +137,164 @@ async function submitWith(form, fn) {
   try { await fn(); } catch (e) { toast(errMsg(e)); btn.disabled = false; btn.textContent = old; }
 }
 const data = f => Object.fromEntries(new FormData(f).entries());
+const showError = e => { $('#panel').innerHTML = `<div class="card narrow"><div class="alert alert-danger">${esc(errMsg(e))}</div></div>`; };
 
-api('getPublicInfo').then(info => MODE === 'book' ? renderBooking(info) : renderLeave(info))
-  .catch(e => { $('#card').innerHTML = `<div class="alert alert-danger">${esc(errMsg(e))}</div>`; });
+if (MODE === 'book') {
+  api('getPublicSite').then(site => { SITE = site; showTab('book'); }).catch(showError);
+} else {
+  api('getPublicInfo').then(renderLeave).catch(showError);
+}
 
-/* ---------------- จองบริการ ---------------- */
+/* ============================================================
+ * เมนูด้านบน (หน้าจองบริการ)
+ * ============================================================ */
+let SITE = null;
+let TAB = 'book';
+let PRESELECT = {};
+const TABS = [
+  ['book', '📝 จองบริการ'],
+  ['about', 'หนังสือรับประกันและความเป็นมา'],
+  ['services', 'บริการของศูนย์มีอะไรบ้าง'],
+  ['workers', 'ประวัติผู้รับจ้างแต่ละบริการ'],
+  ['availability', 'จำนวนผู้รับจ้างว่างวันไหนบ้างแต่ละบริการ'],
+  ['ongoing', 'รายการที่ให้บริการอยู่'],
+];
+
+function showTab(key) {
+  TAB = key;
+  $('#nav').innerHTML = TABS.map(([k, label]) =>
+    `<button data-tab="${k}" class="${k === TAB ? 'active' : ''}">${label}</button>`).join('');
+  $('#nav').querySelectorAll('button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+  const active = $('#nav button.active');
+  if (active) active.scrollIntoView({ block: 'nearest', inline: 'center' });
+  ({ book: renderBookTab, about: renderAbout, services: renderServices, workers: renderWorkers,
+     availability: renderAvailability, ongoing: renderOngoing })[key]();
+  const nav = $('.site-nav');
+  if (nav && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });
+}
+
+function bookService(code, date) {
+  PRESELECT = { service: code || '', date: date || '' };
+  showTab('book');
+}
+
+const svcName = code => (SITE.services.find(s => s.service_code === code) || {}).service_name || code;
+const paragraphs = text => String(text || '').split(/\n{2,}/)
+  .map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
+
+/* ---------- 1. หนังสือรับประกันและความเป็นมา ---------- */
+function renderAbout() {
+  $('#panel').innerHTML = `<div class="narrow stack">
+    ${SITE.about.map(a => `<div class="card about-card"><h2>${esc(a.title)}</h2>${paragraphs(a.content)}</div>`).join('')}
+    <button class="btn btn-primary" style="width:100%;padding:12px" onclick="showTab('book')">จองบริการกับเรา</button>
+  </div>`;
+}
+
+/* ---------- 2. บริการของศูนย์มีอะไรบ้าง ---------- */
+function renderServices() {
+  const todayIdx = 0;
+  $('#panel').innerHTML = `
+    <h2 class="page-title">บริการของศูนย์</h2>
+    <p class="page-sub">ราคาเป็นเงินบาทคงที่ ไม่มีค่าใช้จ่ายแอบแฝง</p>
+    <div class="cards">${SITE.services.map(s => {
+      const av = SITE.availability.find(a => a.service_code === s.service_code);
+      const freeToday = av ? av.counts[todayIdx] : 0;
+      return `<div class="card svc-card">
+        <h3>${esc(s.service_name)}</h3>
+        <div class="svc-price">${baht(s.client_price)} <small>/ ${esc(s.unit_type || 'ครั้ง')}</small></div>
+        <div class="chips grow">
+          <span class="badge b-brand">ผู้ดูแลที่รองรับ ${s.worker_keys.length} คน</span>
+          <span class="badge ${freeToday ? 'b-ok' : 'b-danger'}">ว่างวันนี้ ${freeToday} คน</span>
+          ${s.requires_car ? '<span class="badge b-info">🚗 ผู้ดูแลมีรถรับ-ส่ง</span>' : ''}
+        </div>
+        <button class="btn btn-primary" onclick="bookService('${esc(s.service_code)}')">จองบริการนี้</button>
+      </div>`;
+    }).join('') || '<div class="card">ยังไม่มีรายการบริการ</div>'}</div>`;
+}
+
+/* ---------- 3. ประวัติผู้รับจ้างแต่ละบริการ ---------- */
+function renderWorkers() {
+  const byKey = {};
+  SITE.workers.forEach(w => { byKey[w.key] = w; });
+  const since = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})/); return m ? `ร่วมงานตั้งแต่ ${MONTH[+m[2] - 1]} ${+m[1] + 543}` : ''; };
+  const statusBadge = w => w.ready ? '<span class="badge b-ok">พร้อมรับงาน</span>' : `<span class="badge b-warn">${esc(w.status || 'ไม่ว่าง')}</span>`;
+  $('#panel').innerHTML = `
+    <h2 class="page-title">ประวัติผู้รับจ้างแต่ละบริการ</h2>
+    <p class="page-sub">ผู้ดูแลทุกคนผ่านการตรวจประวัติอาชญากรรม · แสดงชื่อแบบย่อเพื่อความเป็นส่วนตัว</p>
+    ${SITE.services.map(s => {
+      const list = s.worker_keys.map(k => byKey[k]).filter(Boolean);
+      return `<div class="svc-group">
+        <h3>${esc(s.service_name)} <span class="badge b-brand">${list.length} คน</span></h3>
+        ${list.length ? `<div class="cards">${list.map(w => `
+          <div class="card worker-card">
+            <div class="avatar">${esc((w.name.replace(/^คุณ/, '') || '?').charAt(0))}</div>
+            <div>
+              <div class="name">${esc(w.name)}</div>
+              <div class="small muted">${esc(w.area || '')}${w.area && w.since ? ' · ' : ''}${since(w.since)}</div>
+              <div class="chips">
+                ${statusBadge(w)}
+                ${w.police_ok ? '<span class="badge b-ok">✓ ผ่านตรวจประวัติ</span>' : ''}
+                ${w.has_car ? '<span class="badge b-info">🚗 มีรถส่วนตัว</span>' : ''}
+                <span class="badge">งานสำเร็จ ${w.done_jobs} ครั้ง</span>
+              </div>
+              <div class="chips">${w.skills.map(t => `<span class="badge b-brand">${esc(t)}</span>`).join('')}</div>
+            </div>
+          </div>`).join('')}</div>` : '<div class="card small muted">ยังไม่มีผู้รับจ้างสำหรับบริการนี้</div>'}
+      </div>`;
+    }).join('')}`;
+}
+
+/* ---------- 4. จำนวนผู้รับจ้างว่างวันไหนบ้างแต่ละบริการ ---------- */
+function renderAvailability() {
+  const head = SITE.days.map(d => {
+    const wd = new Date(utc(d)).getUTCDay();
+    return `<th class="${wd === 0 || wd === 6 ? 'weekend' : ''}">${WEEKDAY[wd]}<br>${+d.slice(8)}/${+d.slice(5, 7)}</th>`;
+  }).join('');
+  $('#panel').innerHTML = `
+    <h2 class="page-title">จำนวนผู้รับจ้างที่ว่าง 14 วันข้างหน้า</h2>
+    <p class="page-sub">นับผู้ดูแลที่ว่างทั้งวัน มีทักษะตรงบริการ และพร้อมรับงาน · กดตัวเลขเพื่อจองวันนั้น · ข้อมูล ณ ${fmt(SITE.updated)}</p>
+    <div class="avail-wrap"><table class="avail">
+      <thead><tr><th>บริการ</th>${head}</tr></thead>
+      <tbody>${SITE.availability.map(a => `<tr><td>${esc(svcName(a.service_code))}</td>${a.counts.map((n, i) => {
+        const cls = n === 0 ? 'none' : n <= 1 ? 'low' : 'ok';
+        return `<td>${n === 0 ? '<span class="cnt none">เต็ม</span>'
+          : `<button class="cnt ${cls}" title="จองวันที่ ${fmt(SITE.days[i], false)}" onclick="bookService('${esc(a.service_code)}','${SITE.days[i]}')">${n}</button>`}</td>`;
+      }).join('')}</tr>`).join('')}</tbody>
+    </table></div>
+    <div class="legend"><span><span class="cnt ok">2+</span> ว่างหลายคน</span><span><span class="cnt low">1</span> เหลือคนเดียว</span><span><span class="cnt none">เต็ม</span> ไม่มีผู้ดูแลว่าง</span></div>`;
+}
+
+/* ---------- 5. รายการที่ให้บริการอยู่ ---------- */
+function renderOngoing() {
+  const L = SITE.ongoing;
+  const n = st => L.filter(x => x.state === st).length;
+  const label = { active: ['b-info', 'กำลังให้บริการ'], scheduled: ['b-ok', 'นัดหมายแล้ว'], waiting: ['b-warn', 'รอจัดผู้ดูแล'] };
+  $('#panel').innerHTML = `
+    <h2 class="page-title">รายการที่ให้บริการอยู่</h2>
+    <p class="page-sub">งานที่กำลังดูแลและนัดหมายล่วงหน้า · ไม่แสดงข้อมูลผู้ป่วยเพื่อความเป็นส่วนตัว · ข้อมูล ณ ${fmt(SITE.updated)}</p>
+    <div class="stats">
+      <div class="stat"><div class="v">${n('active')}</div><div class="k">กำลังให้บริการ</div></div>
+      <div class="stat"><div class="v">${n('scheduled')}</div><div class="k">นัดหมายแล้ว</div></div>
+      <div class="stat"><div class="v">${n('waiting')}</div><div class="k">รอจัดผู้ดูแล</div></div>
+    </div>
+    <div class="card">${L.length ? L.map(x => `
+      <div class="ongo">
+        <div class="grow"><b>${esc(x.service_name)}</b>
+          <div class="small muted">${fmt(x.start)} – ${fmt(x.end)}${x.worker ? ' · ผู้ดูแล: ' + esc(x.worker) : ''}</div></div>
+        <span class="badge ${label[x.state][0]}">${label[x.state][1]}</span>
+      </div>`).join('') : '<div class="small muted">ขณะนี้ยังไม่มีรายการให้บริการ</div>'}</div>`;
+}
+
+/* ---------- จองบริการ ---------- */
+function renderBookTab() {
+  $('#panel').innerHTML = `<div class="card narrow" id="card"></div>`;
+  renderBooking(SITE);
+}
+
 function renderBooking(info) {
   $('#card').innerHTML = `
+  <h2 class="page-title">จองบริการดูแลผู้ป่วย / ผู้สูงอายุ</h2>
+  <p class="page-sub">กรอกข้อมูลด้านล่าง เจ้าหน้าที่ศูนย์จะติดต่อกลับเพื่อยืนยันและแจ้งช่องทางชำระเงิน</p>
   <form id="f" class="stack">
     <div class="section-title">1. บริการที่ต้องการ</div>
     <label class="field">ประเภทบริการ
@@ -117,6 +333,16 @@ function renderBooking(info) {
     if (s) $('#price').innerHTML = `ค่าบริการ <b>${baht(s.client_price)}</b> ต่อ${esc(s.unit_type || 'ครั้ง')} · ราคาคงที่ ไม่มีค่าใช้จ่ายแอบแฝง`;
   };
   f.start_datetime.onchange = () => { if (!f.end_datetime.value) f.end_datetime.value = f.start_datetime.value; f.end_datetime.min = f.start_datetime.value; };
+
+  // มาจากปุ่ม "จองบริการนี้" หรือกดตัวเลขในตารางวันว่าง
+  if (PRESELECT.service) { f.service_code.value = PRESELECT.service; f.service_code.onchange(); }
+  if (PRESELECT.date) {
+    const start = PRESELECT.date === today() ? nowLocal(1).slice(0, 14) + '00' : PRESELECT.date + 'T08:00';
+    f.start_datetime.value = start;
+    f.start_datetime.onchange();
+  }
+  PRESELECT = {};
+
   f.onsubmit = e => {
     e.preventDefault();
     submitWith(f, async () => {
@@ -130,8 +356,11 @@ function renderBooking(info) {
   };
 }
 
-/* ---------------- ยื่นใบลา ---------------- */
+/* ============================================================
+ * ยื่นใบลา (หน้า ?page=ยื่นใบลา)
+ * ============================================================ */
 function renderLeave(info) {
+  $('#panel').innerHTML = `<div class="card" id="card"></div>`;
   $('#card').innerHTML = `
   <form id="f" class="stack">
     <div class="grid">

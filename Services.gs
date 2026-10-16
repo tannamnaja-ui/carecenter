@@ -676,6 +676,105 @@ function getPublicInfo() {
   };
 }
 
+/**
+ * ข้อมูลหน้าเว็บจองบริการทั้งหมดในครั้งเดียว:
+ * หนังสือรับประกัน/ความเป็นมา, บริการ, ประวัติผู้รับจ้างแต่ละบริการ, จำนวนคนว่างรายวัน, งานที่กำลังให้บริการ
+ * เป็นหน้าสาธารณะ จึงไม่ส่งเลขบัตร เบอร์โทร นามสกุลเต็ม หรือชื่อผู้ป่วยออกไป
+ */
+function getPublicSite() {
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('public_site');
+  if (hit) return JSON.parse(hit);
+
+  const ctx = loadCtx_();
+  const services = ctx.services.filter(s => toNum_(s.client_price) > 0);
+  const now = new Date();
+  const doneCount = {};
+  ctx.jobs.forEach(j => {
+    if (j.job_status === STATUS.JOB.DONE) doneCount[j.worker_id] = (doneCount[j.worker_id] || 0) + 1;
+  });
+
+  const shown = ctx.workers.filter(w => w.status !== STATUS.WORKER.RESIGNED &&
+    (!CONFIG.REQUIRE_POLICE_CHECK || w.police_check_status === STATUS.POLICE.PASSED));
+  const workers = shown.map(w => {
+    const since = toDate_(w.contract_signed_date);
+    return {
+      key: w.worker_id,
+      name: publicName_(w),
+      area: w.village_moo || '',
+      skills: splitTags_(w.skill_tags),
+      has_car: toBool_(w.has_car),
+      police_ok: w.police_check_status === STATUS.POLICE.PASSED,
+      ready: w.status === STATUS.WORKER.READY,
+      status: w.status || '',
+      done_jobs: doneCount[w.worker_id] || 0,
+      since: since ? Utilities.formatDate(since, CONFIG.TZ, 'yyyy-MM-dd') : '',
+    };
+  });
+
+  // จำนวนผู้รับจ้างที่ว่างทั้งวัน ล่วงหน้า 14 วัน แยกตามบริการ
+  const days = [];
+  for (let i = 0; i < 14; i++) days.push(startOfDay_(new Date(now.getTime() + i * 86400000)));
+  const availability = services.map(svc => ({
+    service_code: svc.service_code,
+    counts: days.map(d => ctx.workers.filter(w =>
+      evaluateWorker_(w, svc, d, endOfDay_(d), ctx, null).length === 0).length),
+  }));
+
+  const ongoing = ctx.jobs
+    .filter(j => j.job_status !== STATUS.JOB.CANCELLED && j.job_status !== STATUS.JOB.DONE)
+    .filter(j => { const e = toDate_(j.end_datetime); return e && e >= now; })
+    .sort((a, b) => toDate_(a.start_datetime) - toDate_(b.start_datetime))
+    .slice(0, 50)
+    .map(j => {
+      const svc = byId_(ctx.services, 'service_code', j.service_code);
+      const w = j.worker_id ? byId_(ctx.workers, 'worker_id', j.worker_id) : null;
+      const s = toDate_(j.start_datetime);
+      return {
+        service_name: svc ? svc.service_name : j.service_code,
+        start: Utilities.formatDate(s, CONFIG.TZ, "yyyy-MM-dd'T'HH:mm"),
+        end: Utilities.formatDate(toDate_(j.end_datetime), CONFIG.TZ, "yyyy-MM-dd'T'HH:mm"),
+        worker: w ? publicName_(w) : '',
+        state: j.job_status === STATUS.JOB.ACTIVE || s <= now ? 'active' : (w ? 'scheduled' : 'waiting'),
+      };
+    });
+
+  let about = [];
+  try {
+    about = readTable_(SHEET.ABOUT).map(r => ({ key: r.section_key, title: r.title, content: String(r.content || '') }));
+  } catch (e) { /* ยังไม่ได้สร้างแผ่น "เกี่ยวกับศูนย์" */ }
+  if (!about.length) about = ABOUT_DEFAULTS.map(r => ({ key: r[0], title: r[1], content: r[2] }));
+
+  const out = {
+    centerName: CONFIG.CENTER_NAME,
+    slogan: CONFIG.SLOGAN,
+    conditions: OPTIONS.patient_condition,
+    about: about,
+    services: services.map(s => ({
+      service_code: s.service_code,
+      service_name: s.service_name,
+      unit_type: s.unit_type,
+      client_price: toNum_(s.client_price),
+      requires_car: serviceRequiresCar_(s),
+      worker_keys: shown.filter(w => workerHasSkill_(w, s) && (!serviceRequiresCar_(s) || toBool_(w.has_car))).map(w => w.worker_id),
+    })),
+    workers: workers,
+    days: days.map(d => Utilities.formatDate(d, CONFIG.TZ, 'yyyy-MM-dd')),
+    availability: availability,
+    ongoing: ongoing,
+    updated: Utilities.formatDate(now, CONFIG.TZ, "yyyy-MM-dd'T'HH:mm"),
+  };
+  try { cache.put('public_site', JSON.stringify(out), 120); } catch (e) { /* ข้อมูลใหญ่เกิน cache ก็ไม่เป็นไร */ }
+  return out;
+}
+
+/** ชื่อที่แสดงต่อสาธารณะ: ชื่อจริง + อักษรแรกของนามสกุล (+ ชื่อเล่น) */
+function publicName_(w) {
+  const parts = String(w.full_name || '').trim().split(/\s+/);
+  const name = parts[0] + (parts[1] ? ' ' + parts[1].charAt(0) + '.' : '');
+  return (w.nickname ? 'คุณ' + w.nickname + ' · ' : '') + name;
+}
+
 function throttle_(key, max, seconds) {
   const cache = CacheService.getScriptCache();
   const n = Number(cache.get(key) || 0);
