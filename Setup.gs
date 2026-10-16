@@ -71,7 +71,7 @@ function lastHeaderCol_(sh) {
 
 function styleHeaderCells_(sh, col, count) {
   sh.getRange(CONFIG.DESC_ROW, col, 1, count).setFontColor('#5f6f6b').setFontStyle('italic').setWrap(true).setVerticalAlignment('top');
-  sh.getRange(CONFIG.HEADER_ROW, col, 1, count).setFontWeight('bold').setBackground('#0e7c6b').setFontColor('#ffffff');
+  sh.getRange(CONFIG.HEADER_ROW, col, 1, count).setFontWeight('bold').setBackground('#1f6273').setFontColor('#ffffff');
 }
 
 function formatColumn_(sh, field, col) {
@@ -85,7 +85,7 @@ function formatColumn_(sh, field, col) {
 
 function buildNewSheet_(sh, schema) {
   const fields = schema.fields;
-  sh.getRange(CONFIG.TITLE_ROW, 1).setValue(CONFIG.CENTER_NAME + ' — ' + schema.title).setFontSize(14).setFontWeight('bold').setFontColor('#0e7c6b');
+  sh.getRange(CONFIG.TITLE_ROW, 1).setValue(CONFIG.CENTER_NAME + ' — ' + schema.title).setFontSize(14).setFontWeight('bold').setFontColor('#1f6273');
   sh.getRange(CONFIG.DESC_ROW, 1, 1, fields.length).setValues([fields.map(f => f[1])]);
   sh.getRange(CONFIG.HEADER_ROW, 1, 1, fields.length).setValues([fields.map(f => f[0])]);
   styleHeaderCells_(sh, 1, fields.length);
@@ -184,7 +184,7 @@ function buildDashboardSheet_(book) {
     ['⚠️ ใบงานที่รอลูกค้าชำระเงิน', '=COUNTIFS(' + jc('payment_status') + ',"' + STATUS.PAYMENT.PENDING + '",' + live + ')'],
     ['คนทำงานที่พร้อมลงงานทันที', '=COUNTIF(' + wc('status') + ',"' + STATUS.WORKER.READY + '")'],
   ];
-  sh.getRange(1, 1).setValue(CONFIG.CENTER_NAME + ' — สรุปผลการดำเนินงาน').setFontSize(14).setFontWeight('bold').setFontColor('#0e7c6b');
+  sh.getRange(1, 1).setValue(CONFIG.CENTER_NAME + ' — สรุปผลการดำเนินงาน').setFontSize(14).setFontWeight('bold').setFontColor('#1f6273');
   sh.getRange(2, 1).setValue(CONFIG.SLOGAN).setFontStyle('italic').setFontColor('#5f6f6b');
   sh.getRange(4, 1, rows.length, 2).setValues(rows);
   sh.getRange(4, 2, rows.length, 1).setNumberFormat('#,##0').setFontWeight('bold');

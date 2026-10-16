@@ -2,10 +2,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --brand: #0e7c6b;
-    --brand-strong: #0a5f52;
-    --brand-soft: #e3f3ef;
-    --heart: #e0457b;
+    --brand: #1f6273;
+    --brand-strong: #164a57;
+    --brand-soft: #e4eff2;
+    --heart: #d9952c;
     --bg: #f5f7f6;
     --surface: #ffffff;
     --ink: #1d2a27;
@@ -37,12 +37,10 @@
 
   /* ---------- brand ---------- */
   .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .brand-mark {
-    flex: none; width: 42px; height: 42px; border-radius: 12px;
-    background: linear-gradient(135deg, var(--brand), #14a38c);
-    display: grid; place-items: center;
+  .brand-logo {
+    flex: none; width: 48px; height: 48px; border-radius: 50%;
+    background: #fff; object-fit: cover; box-shadow: 0 0 0 1px var(--line);
   }
-  .brand-mark svg { width: 24px; height: 24px; }
   .brand-name { font-size: 19px; font-weight: 700; }
   .brand-slogan { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
