@@ -58,7 +58,11 @@ function setupSheets() {
   if (seedAboutSheet_()) report.push('📝 ใส่ข้อความตั้งต้นในแผ่น "' + SHEET.ABOUT + '" แล้ว (แก้ไขได้ในชีต)');
 
   applyConditionalFormats_(book);
-  if (!book.getSheetByName(SHEET.DASHBOARD)) {
+  const dash = findSheet_(book, SHEET.DASHBOARD);
+  if (dash && dash.getName() !== SHEET.DASHBOARD) {
+    report.push('✏️ เปลี่ยนชื่อแผ่นงาน "' + dash.getName() + '" เป็น "' + SHEET.DASHBOARD + '"');
+    dash.setName(SHEET.DASHBOARD);
+  } else if (!dash) {
     buildDashboardSheet_(book);
     report.push('➕ สร้างแผ่นงาน ' + SHEET.DASHBOARD);
   }

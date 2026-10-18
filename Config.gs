@@ -11,7 +11,7 @@
 
 const CONFIG = {
   // เปลี่ยนทุกครั้งที่แก้โค้ด — ใช้ตรวจว่าเว็บแอปที่ Deploy อยู่เป็นโค้ดล่าสุดหรือไม่
-  VERSION: '2026-10-18.2',
+  VERSION: '2026-10-18.3',
   SPREADSHEET_ID: '10zdLwG_G4M7x7Bmd071pUFWoqBK1Nv_h3fp7Qir2HtY',
   TZ: 'Asia/Bangkok',
   TITLE_ROW: 1,
@@ -32,12 +32,12 @@ const CONFIG = {
 
 const SHEET = {
   WORKERS: 'ผู้รับจ้าง',
-  CLIENTS: 'Clients',
+  CLIENTS: 'ลูกค้า',
   SERVICES: 'บริการของศูนย์ทั้งหมด',
-  JOBS: 'Job_Orders',
-  PAYMENTS: 'Payments',
-  LEAVES: 'Leave_Requests',
-  DASHBOARD: 'Dashboard_Summary',
+  JOBS: 'ใบงาน',
+  PAYMENTS: 'การเงิน',
+  LEAVES: 'ใบลา',
+  DASHBOARD: 'สรุปผล',
   ABOUT: 'เกี่ยวกับศูนย์',
 };
 
@@ -64,6 +64,11 @@ const ABOUT_DEFAULTS = [
 const SHEET_ALIASES = {
   [SHEET.SERVICES]: ['Service_Catalog', 'บริการของศุนย์ทั้งหมด'],
   [SHEET.WORKERS]: ['Workers'],
+  [SHEET.CLIENTS]: ['Clients'],
+  [SHEET.JOBS]: ['Job_Orders'],
+  [SHEET.PAYMENTS]: ['Payments'],
+  [SHEET.LEAVES]: ['Leave_Requests'],
+  [SHEET.DASHBOARD]: ['Dashboard_Summary'],
 };
 
 const STATUS = {
@@ -154,7 +159,7 @@ const SCHEMA = {
     idPrefix: 'JOB-',
     fields: [
       ['job_id', 'รหัสใบงาน (เช่น JOB-001)'],
-      ['client_id', 'รหัสผู้ว่าจ้าง (จาก Clients)'],
+      ['client_id', 'รหัสผู้ว่าจ้าง (จากแผ่น ลูกค้า)'],
       ['service_code', 'รหัสบริการ (จากแผ่น บริการของศูนย์ทั้งหมด)'],
       ['worker_id', 'รหัสผู้รับจ้างที่ไปทำ (จากแผ่น ผู้รับจ้าง)'],
       ['start_datetime', 'วันและเวลาเริ่มงาน'],
@@ -173,7 +178,7 @@ const SCHEMA = {
     idPrefix: 'TX-',
     fields: [
       ['trans_id', 'รหัสรายการโอน (เช่น TX-001)'],
-      ['job_id', 'รหัสใบงานที่อ้างอิง'],
+      ['job_id', 'รหัสใบงานที่อ้างอิง (จากแผ่น ใบงาน)'],
       ['trans_type', 'ประเภทรายการ'],
       ['amount', 'จำนวนเงิน (บาท)'],
       ['trans_datetime', 'วันและเวลาที่โอนเงิน'],
