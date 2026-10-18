@@ -205,7 +205,7 @@ function renderServices() {
       const freeToday = av ? av.counts[todayIdx] : 0;
       return `<div class="card svc-card">
         <h3>${esc(s.service_name)}</h3>
-        <div class="svc-price">${baht(s.client_price)} <small>/ ${esc(s.unit_type || 'ครั้ง')}</small></div>
+        <div class="svc-price">${s.client_price ? `${baht(s.client_price)} <small>/ ${esc(s.unit_type || 'ครั้ง')}</small>` : 'สอบถามราคา'}</div>
         <div class="chips grow">
           <span class="badge b-brand">ผู้ดูแลที่รองรับ ${s.worker_keys.length} คน</span>
           <span class="badge ${freeToday ? 'b-ok' : 'b-danger'}">ว่างวันนี้ ${freeToday} คน</span>
@@ -303,8 +303,9 @@ function renderBooking(info) {
     <div class="section-title">1. บริการที่ต้องการ</div>
     <label class="field">ประเภทบริการ
       <select name="service_code" required><option value="">— เลือกบริการ —</option>
-        ${info.services.map(s => `<option value="${esc(s.service_code)}">${esc(s.service_name)} — ${baht(s.client_price)}/${esc(s.unit_type || 'ครั้ง')}</option>`).join('')}
+        ${info.services.map(s => `<option value="${esc(s.service_code)}">${esc(s.service_name)} — ${s.client_price ? baht(s.client_price) + '/' + esc(s.unit_type || 'ครั้ง') : 'สอบถามราคา'}</option>`).join('')}
       </select></label>
+    ${info.services.length ? '' : '<div class="alert alert-warn">ยังไม่มีรายการบริการให้เลือก — กรุณาติดต่อศูนย์โดยตรง</div>'}
     <div class="price-line" id="price" hidden></div>
     <div class="grid">
       <label class="field">วันเวลาเริ่ม <input type="datetime-local" name="start_datetime" required min="${nowLocal()}"></label>
@@ -334,7 +335,9 @@ function renderBooking(info) {
   f.service_code.onchange = () => {
     const s = info.services.find(x => x.service_code === f.service_code.value);
     $('#price').hidden = !s;
-    if (s) $('#price').innerHTML = `ค่าบริการ <b>${baht(s.client_price)}</b> ต่อ${esc(s.unit_type || 'ครั้ง')} · ราคาคงที่ ไม่มีค่าใช้จ่ายแอบแฝง`;
+    if (s) $('#price').innerHTML = s.client_price
+      ? `ค่าบริการ <b>${baht(s.client_price)}</b> ต่อ${esc(s.unit_type || 'ครั้ง')} · ราคาคงที่ ไม่มีค่าใช้จ่ายแอบแฝง`
+      : 'บริการนี้เจ้าหน้าที่จะแจ้งราคาให้ทราบเมื่อติดต่อกลับ';
   };
   f.start_datetime.onchange = () => { if (!f.end_datetime.value) f.end_datetime.value = f.start_datetime.value; f.end_datetime.min = f.start_datetime.value; };
 

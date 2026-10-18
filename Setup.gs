@@ -11,6 +11,7 @@ function onOpen() {
     .addSeparator()
     .addItem('ลิงก์ระบบ (ผู้จัดการ / จองงาน / ยื่นลา)', 'showWebAppLinks')
     .addItem('ส่งแจ้งเตือนงานพรุ่งนี้ตอนนี้เลย', 'sendUpcomingReminders')
+    .addItem('ตรวจแผ่นบริการ (ทำไมไม่มีตัวเลือกในหน้าจอง)', 'checkServicesSheet')
     .addToUi();
 }
 

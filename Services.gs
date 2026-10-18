@@ -670,10 +670,49 @@ function getPublicInfo() {
     minLeaveDays: CONFIG.MIN_LEAVE_NOTICE_DAYS,
     lateLeaveTag: LATE_LEAVE_TAG,
     conditions: OPTIONS.patient_condition,
-    services: readTable_(SHEET.SERVICES)
-      .filter(s => toNum_(s.client_price) > 0)
+    services: bookableServices_(readTable_(SHEET.SERVICES))
       .map(s => ({ service_code: s.service_code, service_name: s.service_name, unit_type: s.unit_type, client_price: toNum_(s.client_price) })),
   };
+}
+
+/** บริการที่แสดงให้ลูกค้าเลือก: มีรหัสและชื่อบริการ (ยังไม่ตั้งราคาก็แสดง แต่ขึ้นว่า "สอบถามราคา") */
+function bookableServices_(rows) {
+  return rows.filter(s => String(s.service_code || '').trim() && String(s.service_name || '').trim());
+}
+
+/** key ของ cache หน้าเว็บจองบริการ ผูกกับเวอร์ชัน เพื่อให้ Deploy ใหม่แล้วไม่ติดข้อมูลเก่า */
+function publicCacheKey_() {
+  return 'public_site_' + CONFIG.VERSION;
+}
+
+/**
+ * ตรวจว่าระบบอ่านแผ่น "บริการของศูนย์ทั้งหมด" ได้อะไรบ้าง
+ * วิธีใช้: ใน Apps Script เลือกฟังก์ชัน checkServicesSheet แล้วกด ▶ Run ดูผลในบันทึกการดำเนินการ
+ */
+function checkServicesSheet() {
+  const lines = [];
+  const sh = findSheet_(ss(), SHEET.SERVICES);
+  if (!sh) {
+    lines.push('❌ ไม่พบแผ่น "' + SHEET.SERVICES + '" (และไม่พบแผ่นที่มีหัวคอลัมน์ service_code ในแถว ' + CONFIG.HEADER_ROW + ')');
+    return notify_(lines.join('\n'));
+  }
+  lines.push('✅ พบแผ่น: "' + sh.getName() + '" (แถวสุดท้ายที่มีข้อมูล: ' + sh.getLastRow() + ')');
+  const headers = sh.getRange(CONFIG.HEADER_ROW, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0].map(h => String(h).trim());
+  lines.push('หัวคอลัมน์แถว ' + CONFIG.HEADER_ROW + ': ' + headers.filter(Boolean).join(' | '));
+  ['service_code', 'service_name', 'client_price', 'center_fee'].forEach(f => {
+    if (headers.indexOf(f) < 0) lines.push('❌ ไม่พบคอลัมน์ "' + f + '" ในแถว ' + CONFIG.HEADER_ROW + ' (ต้องสะกดตรงทุกตัว ตัวพิมพ์เล็ก)');
+  });
+  resetCaches_();
+  const rows = readTable_(SHEET.SERVICES);
+  lines.push('อ่านได้ ' + rows.length + ' แถว (เริ่มอ่านจากแถว ' + CONFIG.DATA_START_ROW + ' ข้ามแถวที่ service_code ว่าง)');
+  rows.forEach(r => {
+    const ok = String(r.service_name || '').trim();
+    lines.push((ok ? '✅ ' : '❌ ไม่แสดง (ไม่มีชื่อบริการ) ') + 'แถว ' + r._row + ': ' + r.service_code + ' · ' + (r.service_name || '-') +
+      ' · ราคา "' + r.client_price + '" → อ่านได้ ' + toNum_(r.client_price) + ' บาท');
+  });
+  lines.push('➡️ ตัวเลือกที่ลูกค้าจะเห็นในหน้าจอง: ' + bookableServices_(rows).length + ' รายการ');
+  try { CacheService.getScriptCache().remove(publicCacheKey_()); } catch (e) { /* ไม่เป็นไร */ }
+  return notify_(lines.join('\n'));
 }
 
 /**
@@ -683,11 +722,11 @@ function getPublicInfo() {
  */
 function getPublicSite() {
   const cache = CacheService.getScriptCache();
-  const hit = cache.get('public_site');
+  const hit = cache.get(publicCacheKey_());
   if (hit) return JSON.parse(hit);
 
   const ctx = loadCtx_();
-  const services = ctx.services.filter(s => toNum_(s.client_price) > 0);
+  const services = bookableServices_(ctx.services);
   const now = new Date();
   const doneCount = {};
   ctx.jobs.forEach(j => {
@@ -764,7 +803,7 @@ function getPublicSite() {
     ongoing: ongoing,
     updated: Utilities.formatDate(now, CONFIG.TZ, "yyyy-MM-dd'T'HH:mm"),
   };
-  try { cache.put('public_site', JSON.stringify(out), 120); } catch (e) { /* ข้อมูลใหญ่เกิน cache ก็ไม่เป็นไร */ }
+  try { cache.put(publicCacheKey_(), JSON.stringify(out), 120); } catch (e) { /* ข้อมูลใหญ่เกิน cache ก็ไม่เป็นไร */ }
   return out;
 }
 

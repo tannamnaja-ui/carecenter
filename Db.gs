@@ -161,10 +161,11 @@ function toBool_(v) {
   return ['true', 'yes', 'y', '1', 'มี', 'มีรถ', '✓', '✔'].indexOf(s) >= 0;
 }
 
+/** อ่านตัวเลขจากเซลล์ รองรับข้อความปน เช่น "800 บาท", "1,200.-", "฿600" */
 function toNum_(v) {
   if (typeof v === 'number') return v;
-  const n = Number(String(v || '').replace(/[,฿\s]/g, ''));
-  return isNaN(n) ? 0 : n;
+  const m = String(v || '').replace(/,/g, '').match(/-?\d+(?:\.\d+)?/);
+  return m ? Number(m[0]) : 0;
 }
 
 function digits_(v) {
@@ -235,7 +236,7 @@ function withLock_(fn) {
   } finally {
     SpreadsheetApp.flush();
     // ข้อมูลเปลี่ยน → ล้างข้อมูลหน้าเว็บจองบริการที่ cache ไว้ (วันว่าง/งานที่ให้บริการอยู่)
-    try { CacheService.getScriptCache().remove('public_site'); } catch (e) { /* ไม่เป็นไร */ }
+    try { CacheService.getScriptCache().remove(publicCacheKey_()); } catch (e) { /* ไม่เป็นไร */ }
     lock.releaseLock();
   }
 }
