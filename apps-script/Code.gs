@@ -19,7 +19,7 @@
 
 const CONFIG = {
   // เปลี่ยนทุกครั้งที่แก้โค้ด — ใช้ตรวจว่าเว็บแอปที่ Deploy อยู่เป็นโค้ดล่าสุดหรือไม่
-  VERSION: '2026-10-18.1',
+  VERSION: '2026-10-18.2',
   SPREADSHEET_ID: '10zdLwG_G4M7x7Bmd071pUFWoqBK1Nv_h3fp7Qir2HtY',
   TZ: 'Asia/Bangkok',
   TITLE_ROW: 1,
@@ -39,7 +39,7 @@ const CONFIG = {
 };
 
 const SHEET = {
-  WORKERS: 'Workers',
+  WORKERS: 'ผู้รับจ้าง',
   CLIENTS: 'Clients',
   SERVICES: 'บริการของศูนย์ทั้งหมด',
   JOBS: 'Job_Orders',
@@ -71,6 +71,7 @@ const ABOUT_DEFAULTS = [
 /** ชื่อแผ่นงานเดิมที่ยังรองรับ — setupSheets จะเปลี่ยนชื่อเป็นชื่อใหม่ให้ (ข้อมูลและสูตรอ้างอิงตามไปด้วย) */
 const SHEET_ALIASES = {
   [SHEET.SERVICES]: ['Service_Catalog', 'บริการของศุนย์ทั้งหมด'],
+  [SHEET.WORKERS]: ['Workers'],
 };
 
 const STATUS = {
@@ -163,7 +164,7 @@ const SCHEMA = {
       ['job_id', 'รหัสใบงาน (เช่น JOB-001)'],
       ['client_id', 'รหัสผู้ว่าจ้าง (จาก Clients)'],
       ['service_code', 'รหัสบริการ (จากแผ่น บริการของศูนย์ทั้งหมด)'],
-      ['worker_id', 'รหัสผู้รับจ้างที่ไปทำ (จาก Workers)'],
+      ['worker_id', 'รหัสผู้รับจ้างที่ไปทำ (จากแผ่น ผู้รับจ้าง)'],
       ['start_datetime', 'วันและเวลาเริ่มงาน'],
       ['end_datetime', 'วันและเวลาเสร็จงาน'],
       ['hospital_location', 'สถานที่ / โรงพยาบาล'],
@@ -1671,7 +1672,7 @@ function applyConditionalFormats_(book) {
 }
 
 function addTextRule_(book, sheetName, field, kind, text, bg, ink) {
-  const sh = book.getSheetByName(sheetName);
+  const sh = findSheet_(book, sheetName);
   if (!sh) return;
   const headers = sh.getRange(CONFIG.HEADER_ROW, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim());
   const col = headers.indexOf(field) + 1;
@@ -1692,7 +1693,7 @@ function addTextRule_(book, sheetName, field, kind, text, bg, ink) {
 }
 
 function colLetter_(sheetName, field) {
-  const sh = ss().getSheetByName(sheetName);
+  const sh = findSheet_(ss(), sheetName);
   const headers = sh.getRange(CONFIG.HEADER_ROW, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim());
   let n = headers.indexOf(field) + 1;
   let s = '';
@@ -1704,8 +1705,9 @@ function buildDashboardSheet_(book) {
   const sh = book.insertSheet(SHEET.DASHBOARD);
   const J = SHEET.JOBS, W = SHEET.WORKERS;
   const r = CONFIG.DATA_START_ROW;
-  const jc = f => J + '!' + colLetter_(J, f) + r + ':' + colLetter_(J, f);
-  const wc = f => W + '!' + colLetter_(W, f) + r + ':' + colLetter_(W, f);
+  // ครอบชื่อแผ่นด้วย ' เพราะชื่อภาษาไทย/มีช่องว่างต้องใส่เครื่องหมายคำพูดในสูตร
+  const jc = f => "'" + J + "'!" + colLetter_(J, f) + r + ':' + colLetter_(J, f);
+  const wc = f => "'" + W + "'!" + colLetter_(W, f) + r + ':' + colLetter_(W, f);
   const live = jc('job_status') + ',"<>' + STATUS.JOB.CANCELLED + '"';
   const rows = [
     ['ยอดรายรับรวมที่เก็บจากลูกค้า (บาท)', '=SUMIF(' + live + ',' + jc('total_client_amount') + ')'],

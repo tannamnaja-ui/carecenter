@@ -156,7 +156,7 @@ function applyConditionalFormats_(book) {
 }
 
 function addTextRule_(book, sheetName, field, kind, text, bg, ink) {
-  const sh = book.getSheetByName(sheetName);
+  const sh = findSheet_(book, sheetName);
   if (!sh) return;
   const headers = sh.getRange(CONFIG.HEADER_ROW, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim());
   const col = headers.indexOf(field) + 1;
@@ -177,7 +177,7 @@ function addTextRule_(book, sheetName, field, kind, text, bg, ink) {
 }
 
 function colLetter_(sheetName, field) {
-  const sh = ss().getSheetByName(sheetName);
+  const sh = findSheet_(ss(), sheetName);
   const headers = sh.getRange(CONFIG.HEADER_ROW, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim());
   let n = headers.indexOf(field) + 1;
   let s = '';
@@ -189,8 +189,9 @@ function buildDashboardSheet_(book) {
   const sh = book.insertSheet(SHEET.DASHBOARD);
   const J = SHEET.JOBS, W = SHEET.WORKERS;
   const r = CONFIG.DATA_START_ROW;
-  const jc = f => J + '!' + colLetter_(J, f) + r + ':' + colLetter_(J, f);
-  const wc = f => W + '!' + colLetter_(W, f) + r + ':' + colLetter_(W, f);
+  // ครอบชื่อแผ่นด้วย ' เพราะชื่อภาษาไทย/มีช่องว่างต้องใส่เครื่องหมายคำพูดในสูตร
+  const jc = f => "'" + J + "'!" + colLetter_(J, f) + r + ':' + colLetter_(J, f);
+  const wc = f => "'" + W + "'!" + colLetter_(W, f) + r + ':' + colLetter_(W, f);
   const live = jc('job_status') + ',"<>' + STATUS.JOB.CANCELLED + '"';
   const rows = [
     ['ยอดรายรับรวมที่เก็บจากลูกค้า (บาท)', '=SUMIF(' + live + ',' + jc('total_client_amount') + ')'],
