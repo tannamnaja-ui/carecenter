@@ -16,6 +16,12 @@
       border-bottom: 1px solid var(--line);
     }
     .topbar-inner { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+    /* จอแคบ: โลโก้+ชื่อศูนย์เต็มบรรทัด ปุ่มลงไปแถวถัดไป */
+    @media (max-width: 600px) {
+      .topbar-inner { flex-wrap: wrap; gap: 8px; }
+      .topbar-inner .brand { flex: 1 1 100%; }
+      .topbar-inner .spacer { display: none; }
+    }
     .tabs { max-width: 1280px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
     .tabs button {
       font: inherit; font-weight: 600; font-size: 14px; color: var(--muted);
@@ -95,6 +101,7 @@
         </label>
         <div id="loginError" class="alert alert-danger" hidden></div>
         <button class="btn btn-primary" style="width:100%" id="loginBtn">เข้าสู่ระบบ</button>
+        <div style="text-align:center"><a class="home-btn" href="<?= homeUrl ?>" target="_top">← กลับหน้าแรก</a></div>
       </div>
     </form>
   </div>
@@ -113,6 +120,7 @@
         </div>
         <span class="spacer"></span>
         <span id="loading" class="spinner" hidden></span>
+        <a class="home-btn" href="<?= homeUrl ?>" target="_top">← กลับหน้าแรก</a>
         <button class="btn btn-sm" id="refreshBtn" title="โหลดข้อมูลใหม่">↻ รีเฟรช</button>
         <button class="btn btn-sm btn-ghost" id="logoutBtn">ออกจากระบบ</button>
       </div>

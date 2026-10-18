@@ -18,6 +18,8 @@
     body { margin: 0; font-family: 'Sarabun', system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; }
     header { background: linear-gradient(135deg, #1f6273, #2e8a94); color: #fff; padding: 24px 16px 28px; }
     .head { max-width: 860px; margin: 0 auto; display: flex; gap: 14px; align-items: center; }
+    .home { display: inline-flex; color: #fff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.35); }
+    .home:hover { background: rgba(255,255,255,.26); }
     .head img { width: 64px; height: 64px; border-radius: 50%; background: #fff; flex: none; }
     h1 { margin: 0; font-size: 22px; }
     .head p { margin: 2px 0 0; opacity: .9; font-size: 14px; }
@@ -47,7 +49,9 @@
   </style>
 </head>
 <body>
-  <header><div class="head">
+  <header>
+  <div class="head" style="margin-bottom:14px"><a class="home" href="./">← กลับหน้าแรก</a></div>
+  <div class="head">
     <img src="logo.jpg" alt="โลโก้ศูนย์ดวงใจกตัญญู">
     <div><h1>คัดลอกโค้ดติดตั้งระบบ</h1><p>กดปุ่ม "คัดลอก" ทีละไฟล์ แล้ววางใน Google Apps Script ตามลำดับ</p></div>
   </div></header>

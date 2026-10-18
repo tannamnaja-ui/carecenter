@@ -11,7 +11,7 @@
 
 const CONFIG = {
   // เปลี่ยนทุกครั้งที่แก้โค้ด — ใช้ตรวจว่าเว็บแอปที่ Deploy อยู่เป็นโค้ดล่าสุดหรือไม่
-  VERSION: '2026-10-17.6',
+  VERSION: '2026-10-18.1',
   SPREADSHEET_ID: '10zdLwG_G4M7x7Bmd071pUFWoqBK1Nv_h3fp7Qir2HtY',
   TZ: 'Asia/Bangkok',
   TITLE_ROW: 1,
@@ -19,6 +19,8 @@ const CONFIG = {
   HEADER_ROW: 3,
   DATA_START_ROW: 4,
 
+  // ปุ่ม "กลับหน้าแรก" ทุกหน้าลิงก์มาที่นี่
+  HOME_URL: 'https://tannamnaja-ui.github.io/carecenter/',
   CENTER_NAME: 'ศูนย์ดวงใจกตัญญู',
   SLOGAN: 'ดูแลด้วยใจ ซื่อสัตย์ ปลอดภัย วางใจดั่งญาติสนิท',
 

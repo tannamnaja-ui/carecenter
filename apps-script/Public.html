@@ -5,7 +5,9 @@
   <meta charset="utf-8">
   <?!= include_('Styles'); ?>
   <style>
-    .hero { background: linear-gradient(135deg, #1f6273, #2e8a94); color: #fff; padding: 24px 16px 22px; }
+    .hero { position: relative; background: linear-gradient(135deg, #1f6273, #2e8a94); color: #fff; padding: 24px 16px 22px; }
+    .hero .home-btn { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.35); color: #fff; font-size: 13px; padding: 5px 11px; }
+    .hero .home-btn:hover { background: rgba(255,255,255,.26); }
     body.mode-leave .hero { padding-bottom: 64px; }
     .hero-inner { max-width: 640px; margin: 0 auto; text-align: center; }
     .hero .brand { flex-direction: column; justify-content: center; gap: 8px; }
@@ -79,7 +81,9 @@
   </style>
 </head>
 <body class="mode-<?= mode ?>">
-  <div class="hero"><div class="hero-inner">
+  <div class="hero">
+  <a class="home-btn" href="<?= homeUrl ?>" target="_top">← กลับหน้าแรก</a>
+  <div class="hero-inner">
     <div class="brand">
       <img class="brand-logo" src="https://tannamnaja-ui.github.io/carecenter/logo.jpg" alt="โลโก้ศูนย์ดวงใจกตัญญู">
       <div>

@@ -42,7 +42,12 @@
     background: #fff; object-fit: cover; box-shadow: 0 0 0 1px var(--line);
   }
   .brand-name { font-size: 19px; font-weight: 700; }
-  .brand-version { display: inline-block; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .2px; }
+  .home-btn {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--brand); white-space: nowrap;
+  }
+  .home-btn:hover { border-color: var(--brand); }  .brand-version { display: inline-block; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .2px; }
   .brand-slogan { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ---------- controls ---------- */
